@@ -1,6 +1,7 @@
 package com.catchshop.PriceParser.apibot.telegram.config;
 
 import com.catchshop.PriceParser.apibot.telegram.PriceParserTelegramBot;
+import com.catchshop.PriceParser.apibot.telegram.api.TelegramStart;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
@@ -16,8 +17,8 @@ public class BotConfig {
     private String botToken;
 
     @Bean
-    public PriceParserTelegramBot priceParserTelegramBot() {
-        PriceParserTelegramBot telegramBot = new PriceParserTelegramBot(new DefaultBotOptions());
+    public PriceParserTelegramBot priceParserTelegramBot(TelegramStart telegramStart) {
+        PriceParserTelegramBot telegramBot = new PriceParserTelegramBot(new DefaultBotOptions(), telegramStart);
         telegramBot.setBotUserName(botUserName);
         telegramBot.setWebHookPath(webHookPath);
         telegramBot.setBotToken(botToken);
