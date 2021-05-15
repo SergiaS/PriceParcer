@@ -4,14 +4,12 @@ package com.catchshop.PriceParser.apibot.telegram.api;
  * The states/statuses of the bot
  */
 public enum BotStatus {
-    MAIN_MENU,
+    SHOW_MENU,
+    SHOW_SEARCH,
     SHOW_FAVORITE,
-    ADD_TO_FAVORITE,
-    LANGUAGE_SETTINGS,
-
-    SEARCH_MENU,
-    SEARCH_PROCESS,
+    SHOW_LANGUAGES,
+    SHOW_ERROR,
 
     SHOW_RESULT,
-    SHOW_HELP_MENU
+    SHOW_HELP
 }

@@ -2,23 +2,28 @@ package com.catchshop.PriceParser.apibot.telegram.api.handlers;
 
 import com.catchshop.PriceParser.apibot.telegram.api.BotStatus;
 import com.catchshop.PriceParser.apibot.telegram.api.InputMessageHandler;
-import com.catchshop.PriceParser.apibot.telegram.model.UserRequestProfile;
 import com.catchshop.PriceParser.apibot.telegram.repository.UserRepository;
-import com.catchshop.PriceParser.apibot.telegram.service.ReplyMessageService;
+import com.catchshop.PriceParser.apibot.telegram.service.LocaleMessageService;
+import com.catchshop.PriceParser.apibot.telegram.service.MainMenuService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class MenuMessageHandler implements InputMessageHandler {
     private UserRepository userRepository;
-    private ReplyMessageService messageService;
+    private MainMenuService mainMenuService;
 
     @Autowired
-    public MenuMessageHandler(UserRepository userRepository, ReplyMessageService messageService) {
+    public MenuMessageHandler(UserRepository userRepository, MainMenuService mainMenuService) {
         this.userRepository = userRepository;
-        this.messageService = messageService;
+        this.mainMenuService = mainMenuService;
     }
 
     @Override
@@ -26,43 +31,54 @@ public class MenuMessageHandler implements InputMessageHandler {
         return processUserInput(message);
     }
 
-    private SendMessage processUserInput(Message inputMessage) {
-
-        Long userId = inputMessage.getFrom().getId();
-        Long chatId = inputMessage.getChatId();
-
-        UserRequestProfile userRequestProfile = userRepository.getUserRequestProfile(userId);
-        BotStatus botStatus = userRepository.getCurrentBotStatusFromUser(userId);
-
-        SendMessage replyToUser = null;
-
-        if (botStatus.equals(BotStatus.MAIN_MENU)) {
-            userRepository.setCurrentBotStatusToUser(userId, BotStatus.MAIN_MENU);
-            replyToUser = messageService.getReplyMessage(chatId.toString(), "reply.menu.mainMenu");
-        } else if (botStatus.equals(BotStatus.SHOW_FAVORITE)) {
-            userRepository.setCurrentBotStatusToUser(userId, BotStatus.SHOW_FAVORITE);
-            replyToUser = messageService.getReplyMessage(chatId.toString(), "reply.menu.favorite");
-        } else if (botStatus.equals(BotStatus.ADD_TO_FAVORITE)) {
-            userRepository.setCurrentBotStatusToUser(userId, BotStatus.ADD_TO_FAVORITE);
-            replyToUser = messageService.getReplyMessage(chatId.toString(), "reply.menu.addToFavorite");
-            String userAnswer = inputMessage.getText();
-            String formattedText = String.format(replyToUser.getText(), userAnswer);
-            replyToUser.setText(formattedText);
-        } else if (botStatus.equals(BotStatus.LANGUAGE_SETTINGS)) {
-            userRepository.setCurrentBotStatusToUser(userId, BotStatus.LANGUAGE_SETTINGS);
-            replyToUser = messageService.getReplyMessage(chatId.toString(), "reply.menu.changeLanguage");
-            String userAnswer = inputMessage.getText();
-            String formattedText = String.format(replyToUser.getText(), userAnswer);
-            replyToUser.setText(String.format(replyToUser.getText(), formattedText));
-        }
-
-        userRepository.saveUserRequestProfile(userId, userRequestProfile);
-
-        return replyToUser;
-    }
-
     @Override
     public BotStatus getHandleName() {
-        return BotStatus.MAIN_MENU;
+        return BotStatus.SHOW_MENU;
     }
+
+    private SendMessage processUserInput(Message inputMessage) {
+        String chatId = inputMessage.getChatId().toString();
+
+        SendMessage replyToUser;
+        replyToUser = mainMenuService.getMainMenuMessage(chatId, "reply.menu.showMenu");
+        return replyToUser;
+
+//        SendMessage replyToUser = messageService.getReplyMessage(chatId, "button.menu.showMenu");
+//        replyToUser.setReplyMarkup(getInlineMessageButtons(chatId));
+//        return replyToUser;
+    }
+
+    private InlineKeyboardMarkup getInlineMessageButtons(String chatId) {
+        InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
+//        InlineKeyboardButton buttonFavorite =
+//                new InlineKeyboardButton(localeMessageService.getMessage(chatId, "button.menu.showFavorites"));
+//        InlineKeyboardButton buttonSearch =
+//                new InlineKeyboardButton(localeMessageService.getMessage(chatId, "button.menu.showSearch"));
+//        InlineKeyboardButton buttonChangeLanguage =
+//                new InlineKeyboardButton(localeMessageService.getMessage(chatId, "button.menu.showLanguages"));
+//
+//        buttonFavorite.setCallbackData("buttonFavorite");
+//        buttonSearch.setCallbackData("buttonSearch");
+//        buttonChangeLanguage.setCallbackData("buttonChangeLanguage");
+//
+//        List<InlineKeyboardButton> keyboardButtonList1 = new ArrayList<>();
+//        keyboardButtonList1.add(buttonFavorite);
+//
+//        List<InlineKeyboardButton> keyboardButtonList2 = new ArrayList<>();
+//        keyboardButtonList2.add(buttonSearch);
+//
+//        List<InlineKeyboardButton> keyboardButtonList3 = new ArrayList<>();
+//        keyboardButtonList3.add(buttonChangeLanguage);
+//
+//        List<List<InlineKeyboardButton>> rowList = new ArrayList<>();
+//        rowList.add(keyboardButtonList1);
+//        rowList.add(keyboardButtonList2);
+//        rowList.add(keyboardButtonList3);
+//
+//        inlineKeyboardMarkup.setKeyboard(rowList);
+
+        return inlineKeyboardMarkup;
+    }
+
+
 }

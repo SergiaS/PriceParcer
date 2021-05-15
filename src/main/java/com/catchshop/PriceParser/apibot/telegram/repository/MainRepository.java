@@ -1,16 +1,19 @@
 package com.catchshop.PriceParser.apibot.telegram.repository;
 
 import com.catchshop.PriceParser.apibot.telegram.api.BotStatus;
-import com.catchshop.PriceParser.apibot.telegram.model.UserRequestProfile;
+import com.catchshop.PriceParser.apibot.telegram.model.UserProfile;
 
 public interface MainRepository {
 
-    BotStatus getCurrentBotStatusFromUser(Long userId);
+    BotStatus getBotStatus(Long userId);
 
-    void setCurrentBotStatusToUser(Long userId, BotStatus botStatus);
+    void setBotStatus(Long userId, BotStatus botStatus);
 
-    UserRequestProfile getUserRequestProfile(Long userId);
+    UserProfile getUserProfile(Long userId);
 
-    void saveUserRequestProfile(Long userId, UserRequestProfile userRequestProfile);
+    void saveUserProfile(Long userId, UserProfile userProfile);
 
+    String getLocaleProfile(Long userId);
+
+    void setLocaleProfile(Long userId, String locale);
 }

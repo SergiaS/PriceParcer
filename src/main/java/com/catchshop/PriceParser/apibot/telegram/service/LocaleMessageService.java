@@ -12,12 +12,12 @@ import java.util.Locale;
  */
 @Service
 public class LocaleMessageService {
-    private final Locale locale;
+    private Locale locale;
     private final MessageSource messageSource;
 
     @Autowired
-    public LocaleMessageService(@Value("${localeTag}") String localeTag, MessageSource messageSource) {
-        this.locale = Locale.forLanguageTag(localeTag);
+    public LocaleMessageService(@Value("${locale.languageTag}") String languageTag, MessageSource messageSource) {
+        setLanguageTag(languageTag);
         this.messageSource = messageSource;
     }
 
@@ -27,5 +27,9 @@ public class LocaleMessageService {
 
     public String getMessage(String message, Object... args) {
         return messageSource.getMessage(message, args, locale);
+    }
+
+    public void setLanguageTag(String languageTag) {
+        this.locale = Locale.forLanguageTag(languageTag);
     }
 }

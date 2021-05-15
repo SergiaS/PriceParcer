@@ -26,33 +26,15 @@ public class BotStatusContext {
     }
 
     private InputMessageHandler findMessageHandler(BotStatus currentStatus) {
-        if (isMenuStatus(currentStatus)) {
-            return messageHandlers.get(BotStatus.MAIN_MENU);
-        } else if (isSearchStatus(currentStatus)) {
-            return messageHandlers.get(BotStatus.SEARCH_MENU);
+        if (currentStatus.equals(BotStatus.SHOW_SEARCH)) {
+            return messageHandlers.get(BotStatus.SHOW_SEARCH);
+        } else if (currentStatus.equals(BotStatus.SHOW_FAVORITE)) {
+            return messageHandlers.get(BotStatus.SHOW_FAVORITE);
+        } else if (currentStatus.equals(BotStatus.SHOW_LANGUAGES)) {
+            return messageHandlers.get(BotStatus.SHOW_LANGUAGES);
+        } else if (currentStatus.equals(BotStatus.SHOW_ERROR)) {
+            return messageHandlers.get(BotStatus.SHOW_ERROR);
         }
-        return messageHandlers.get(BotStatus.MAIN_MENU); // change in future
-    }
-
-    private boolean isMenuStatus(BotStatus currentStatus) {
-        switch (currentStatus) {
-            case MAIN_MENU:
-            case SHOW_FAVORITE:
-            case ADD_TO_FAVORITE:
-            case LANGUAGE_SETTINGS:
-                return true;
-            default:
-                return false;
-        }
-    }
-
-    private boolean isSearchStatus(BotStatus currentStatus) {
-        switch (currentStatus) {
-            case SEARCH_MENU:
-            case SEARCH_PROCESS:
-                return true;
-            default:
-                return false;
-        }
+        return messageHandlers.get(BotStatus.SHOW_MENU);
     }
 }
