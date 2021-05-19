@@ -84,11 +84,11 @@ public class TelegramStart {
     private SendMessage handleInputMessage(Message message) {
         String inputMessage = message.getText();
         Long userId = message.getFrom().getId();
-        BotStatus botStatus;
+        BotStatus botStatus = null;
 
         if (userRepository.getBotStatus(userId) == null || inputMessage.equals(localeMessageService.getMessage("button.menu.showMenu"))) {
             botStatus = BotStatus.SHOW_MENU;
-        } else if (inputMessage.equals(localeMessageService.getMessage("button.menu.showSearch"))) {
+        } else if (userRepository.getBotStatus(userId) == BotStatus.SHOW_SEARCH || inputMessage.equals(localeMessageService.getMessage("button.menu.showSearch"))) {
             botStatus = BotStatus.SHOW_SEARCH;
         } else if (inputMessage.equals(localeMessageService.getMessage("button.menu.showFavorites"))) {
             botStatus = BotStatus.SHOW_FAVORITE;

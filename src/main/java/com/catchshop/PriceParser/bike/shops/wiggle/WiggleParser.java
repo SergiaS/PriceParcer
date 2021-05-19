@@ -59,7 +59,11 @@ public class WiggleParser {
 
                 List<ShopOptions> itemShopOptions = findShopOptions(itemUrlFromCatalog);
 
-                favoriteItemsList.add(new FavoriteItem(name, ParsedShop.WIGGLE, itemUrlFromCatalog, itemShopOptions, rangePrice));
+                if (favoriteItemsList.size() == 5) {
+                    break;
+                } else {
+                    favoriteItemsList.add(new FavoriteItem(name, ParsedShop.WIGGLE, itemUrlFromCatalog, itemShopOptions, rangePrice));
+                }
             }
 
         } catch (IOException e) {
@@ -106,6 +110,29 @@ public class WiggleParser {
                 .thenComparing(ShopOptions::getColor));
 
         return res;
+    }
+
+    public String getFormattedResult(List<FavoriteItem> itemList) {
+        if (itemList.size() == 0) {
+            return "Nothing was found";
+        }
+
+        int count = 1;
+        StringBuilder result = new StringBuilder();
+        for (FavoriteItem item : itemList) {
+            result.append("<u>").append(count).append(" <a href=\"").append(item.getURL()).append("\">").append(item.getItemName())
+                    .append("</a> ").append(item.getRangePrice()).append("</u>").append("\n");
+            count++;
+
+            for (ShopOptions options : item.getShopOptionsList()) {
+                result.append("<b>").append(CURRENCY_SIGN).append(options.getPrice()).append("</b>")
+                        .append(options.getColor().isEmpty() ? "" : ", " + options.getColor())
+                        .append(options.getSize().isEmpty() ? "" : ", " + options.getSize())
+                        .append(", ").append(options.getStatus()).append("\n");
+            }
+        }
+
+        return result.toString();
     }
 
     private static void printResponse(List<FavoriteItem> itemsList) {
