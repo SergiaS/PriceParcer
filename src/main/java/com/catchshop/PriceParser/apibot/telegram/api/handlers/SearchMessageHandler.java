@@ -1,16 +1,17 @@
 package com.catchshop.PriceParser.apibot.telegram.api.handlers;
 
+import com.catchshop.PriceParser.apibot.telegram.PriceParserTelegramBot;
 import com.catchshop.PriceParser.apibot.telegram.api.BotStatus;
 import com.catchshop.PriceParser.apibot.telegram.api.InputMessageHandler;
-import com.catchshop.PriceParser.apibot.telegram.model.UserProfile;
 import com.catchshop.PriceParser.apibot.telegram.repository.UserRepository;
 import com.catchshop.PriceParser.apibot.telegram.service.LocaleMessageService;
 import com.catchshop.PriceParser.apibot.telegram.service.ReplyMessageService;
 import com.catchshop.PriceParser.apibot.telegram.service.SearchMenuService;
+import com.catchshop.PriceParser.apibot.telegram.util.FormattedResult;
 import com.catchshop.PriceParser.bike.model.FavoriteItem;
-import com.catchshop.PriceParser.bike.model.ShopOptions;
 import com.catchshop.PriceParser.bike.shops.wiggle.WiggleParser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
@@ -23,13 +24,17 @@ public class SearchMessageHandler implements InputMessageHandler {
     private SearchMenuService searchMenuService;
     private LocaleMessageService localeMessageService;
     private ReplyMessageService replyMessageService;
+    private PriceParserTelegramBot telegramBot;
+    private FormattedResult formattedResult;
 
     @Autowired
-    public SearchMessageHandler(UserRepository userRepository, SearchMenuService searchMenuService, LocaleMessageService localeMessageService, ReplyMessageService replyMessageService) {
+    public SearchMessageHandler(UserRepository userRepository, SearchMenuService searchMenuService, LocaleMessageService localeMessageService, ReplyMessageService replyMessageService, @Lazy PriceParserTelegramBot telegramBot, FormattedResult formattedResult) {
         this.userRepository = userRepository;
         this.searchMenuService = searchMenuService;
         this.localeMessageService = localeMessageService;
         this.replyMessageService = replyMessageService;
+        this.telegramBot = telegramBot;
+        this.formattedResult = formattedResult;
     }
 
     @Override
@@ -39,40 +44,30 @@ public class SearchMessageHandler implements InputMessageHandler {
 
     private SendMessage processUserInput(Message inputMessage) {
         String userText = inputMessage.getText();
-        Long userId = inputMessage.getFrom().getId();
-        Long chatId = inputMessage.getChatId();
+//        Long userId = inputMessage.getFrom().getId();
+        String chatId = inputMessage.getChatId().toString();
 
-        UserProfile userProfile = userRepository.getUserProfile(userId);
-        BotStatus botStatus = userRepository.getBotStatus(userId);
+//        UserProfile userProfile = userRepository.getUserProfile(userId);
+//        BotStatus botStatus = userRepository.getBotStatus(userId);
 
-        SendMessage replyToUser = searchMenuService.getSearchMenuMessage(chatId.toString(), userText);
-
-
+        SendMessage replyToUser = searchMenuService.getSearchMenuMessage(chatId, userText);
 
         if (userText.equals(localeMessageService.getMessage("button.menu.showSearch"))) {
-            replyToUser = replyMessageService.getReplyMessage(chatId.toString(), "reply.menu.showSearch");
+            replyToUser.setText(localeMessageService.getMessage("reply.menu.showSearch"));
         } else {
             // user request handler
+            telegramBot.sendMessage(replyMessageService.getReplyMessage(chatId, "reply.search.start"));
+
             WiggleParser wp = new WiggleParser();
             List<FavoriteItem> favoriteItemList = wp.wiggleSearcher(userText);
 
-            String formattedResult = wp.getFormattedResult(favoriteItemList);
-
-
-//            replyToUser.setText("<b>blabla</b>");
-            replyToUser.enableHtml(true);
-            replyToUser.setText(formattedResult);
+            if (favoriteItemList.size() == 0) {
+                replyToUser.setText(localeMessageService.getMessage("reply.search.notFound"));
+            } else {
+                formattedResult.showWiggleResults(chatId, favoriteItemList);
+                replyToUser.setText(localeMessageService.getMessage("reply.search.end"));
+            }
         }
-
-
-//        if (botStatus.equals(BotStatus.SHOW_SEARCH)) {
-//            replyToUser = messageService.getReplyMessage(chatId.toString(), "reply.menu.showSearch");
-//            userRepository.setBotStatus(userId, BotStatus.SHOW_SEARCH);
-//        } else {
-//            userRepository.saveUserProfile(userId, userProfile);
-//        }
-
-
         return replyToUser;
     }
 
@@ -80,28 +75,4 @@ public class SearchMessageHandler implements InputMessageHandler {
     public BotStatus getHandleName() {
         return BotStatus.SHOW_SEARCH;
     }
-
-//    private String getFormattedResult(List<FavoriteItem> itemList) {
-//        if (itemList.size() == 0) {
-//            return "Nothing was found";
-//        }
-//
-//        int count = 1;
-//        StringBuilder result = new StringBuilder();
-//        for (FavoriteItem item : itemList) {
-//            result.append(count).append(" <a href=\"").append(item.getURL()).append("\">").append(item.getItemName())
-//                    .append("</a> ").append(item.getRangePrice()).append("\n");
-//            count++;
-//
-//            for (ShopOptions options : item.getShopOptionsList()) {
-//                result.append(options.getPrice()).append(", ")
-//                        .append(options.getColor().isEmpty() ? "" : ", " + options.getColor())
-//                        .append()
-//
-//
-//            }
-//        }
-//
-//        return result.toString();
-//    }
 }

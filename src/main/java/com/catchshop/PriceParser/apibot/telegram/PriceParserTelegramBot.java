@@ -5,7 +5,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.telegram.telegrambots.bots.DefaultBotOptions;
 import org.telegram.telegrambots.bots.TelegramWebhookBot;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 public class PriceParserTelegramBot extends TelegramWebhookBot {
 
@@ -51,5 +53,13 @@ public class PriceParserTelegramBot extends TelegramWebhookBot {
     @Override
     public BotApiMethod<?> onWebhookUpdateReceived(Update update) {
         return telegramStart.handleUpdate(update);
+    }
+
+    public void sendMessage(SendMessage sendMessage) {
+        try {
+            execute(sendMessage);
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+        }
     }
 }
