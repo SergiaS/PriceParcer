@@ -8,7 +8,7 @@ import com.catchshop.PriceParser.apibot.telegram.service.LocaleMessageService;
 import com.catchshop.PriceParser.apibot.telegram.service.ReplyMessageService;
 import com.catchshop.PriceParser.apibot.telegram.service.SearchMenuService;
 import com.catchshop.PriceParser.apibot.telegram.util.FormattedResult;
-import com.catchshop.PriceParser.bike.model.FavoriteItem;
+import com.catchshop.PriceParser.bike.model.Item;
 import com.catchshop.PriceParser.bike.shops.wiggle.WiggleParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -59,12 +59,12 @@ public class SearchMessageHandler implements InputMessageHandler {
             telegramBot.sendMessage(replyMessageService.getReplyMessage(chatId, "reply.search.start"));
 
             WiggleParser wp = new WiggleParser();
-            List<FavoriteItem> favoriteItemList = wp.wiggleSearcher(userText);
+            List<Item> itemList = wp.wiggleSearcher(userText);
 
-            if (favoriteItemList.size() == 0) {
+            if (itemList.size() == 0) {
                 replyToUser.setText(localeMessageService.getMessage("reply.search.notFound"));
             } else {
-                formattedResult.showWiggleResults(chatId, favoriteItemList);
+                formattedResult.showWiggleResults(chatId, itemList);
                 replyToUser.setText(localeMessageService.getMessage("reply.search.end"));
             }
         }

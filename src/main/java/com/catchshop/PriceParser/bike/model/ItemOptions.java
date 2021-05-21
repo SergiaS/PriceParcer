@@ -2,29 +2,28 @@ package com.catchshop.PriceParser.bike.model;
 
 import java.math.BigDecimal;
 
-public class ShopOptions {
-    private String comboField;
+public class ItemOptions {
+    private String group; // comboField
     private String color;
     private String size;
     private BigDecimal price;
     private String status;
 
-    public ShopOptions(String comboField, BigDecimal price, String status) {
-        this.comboField = comboField;
+    public ItemOptions(String group, BigDecimal price, String status) {
+        this.group = group;
         this.price = price;
         this.status = status;
     }
 
-    public ShopOptions(String color, String size, BigDecimal price, String status) {
-        this.comboField = color + ", " + size;
+    public ItemOptions(String color, String size, BigDecimal price, String status) {
         this.color = color;
         this.size = size;
         this.price = price;
         this.status = status;
     }
 
-    public String getComboField() {
-        return comboField;
+    public String getGroup() {
+        return group;
     }
 
     public String getColor() {

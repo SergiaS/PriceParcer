@@ -1,8 +1,9 @@
 package com.catchshop.PriceParser.bike.shops.wiggle;
 
 import com.catchshop.PriceParser.bike.enums.ParsedShop;
-import com.catchshop.PriceParser.bike.model.FavoriteItem;
-import com.catchshop.PriceParser.bike.model.ShopOptions;
+import com.catchshop.PriceParser.bike.model.Item;
+import com.catchshop.PriceParser.bike.model.ItemOptions;
+import com.catchshop.PriceParser.bike.util.ShopHelper;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -14,21 +15,28 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+/**
+ * Can parse first 48 positions (first page) and specific position by url of Wiggle.
+ * Returns sorted result - positions by price and their options by price and color.
+ */
+
 public class WiggleParser {
     public static final String CURRENCY_TEXT = "USD"; // EUR
     public static final String CURRENCY_SIGN = "$"; // €
-    public final String SITE = "https://www.wiggle.co.uk/?s=";
-    public final String SORT_BY = "&o=2"; // site sort - second parameter (Price: Low to High)
-    public final String IN_STOCK_ONLY = "&ris=1";
-    public final String CURRENCY = "curr=" + CURRENCY_TEXT;
-    public final String COUNTRY = "&prevDestCountryId=99&dest=1";
+    private final String SITE = "https://www.wiggle.co.uk/?s=";
+    private final String SORT_BY = "&o=2"; // site sort - second parameter (Price: Low to High)
+    private final String IN_STOCK_ONLY = "&ris=1";
+    private final String CURRENCY = "curr=" + CURRENCY_TEXT;
+    private final String COUNTRY = "&prevDestCountryId=99&dest=1";
 
     public static void main(String[] args) {
         WiggleParser wp = new WiggleParser();
-        printResponse(wp.wiggleSearcher("castelli gloves white"));
+        ShopHelper.printItems(wp.wiggleSearcher("castelli gloves white"), CURRENCY_SIGN);
+
+//        ShopHelper.printItem(wp.parseItemInfo("https://www.wiggle.co.uk/castelli-arenberg-gel-2-cycling-gloves"), CURRENCY_SIGN);
     }
 
-    public List<FavoriteItem> wiggleSearcher(String textToSearch) {
+    public List<Item> wiggleSearcher(String textToSearch) {
         String catalogItemsUrl = SITE +
                 textToSearch.replace(" ", "+") +
                 SORT_BY +
@@ -36,11 +44,7 @@ public class WiggleParser {
                 "&" + CURRENCY +
                 COUNTRY;
 
-        return searchByText(catalogItemsUrl);
-    }
-
-    private List<FavoriteItem> searchByText(String catalogItemsUrl) {
-        List<FavoriteItem> favoriteItemsList = new ArrayList<>();
+        List<Item> itemsList = new ArrayList<>();
         try {
             Document doc = Jsoup.connect(catalogItemsUrl)
                     .ignoreHttpErrors(true)
@@ -52,61 +56,64 @@ public class WiggleParser {
                     .select("div.bem-product-thumb--grid");
 
             for (Element item : items) {
-                String name = item.select("a.bem-product-thumb__name--grid").text();
-//                String image = item.getElementsByTag("img").attr("src");
-                String itemUrlFromCatalog = item.select("a.bem-product-thumb__name--grid").attr("href");
-                String rangePrice = item.select("span.bem-product-price__unit--grid").text();
+                String itemUrl = item.select("a.bem-product-thumb__name--grid").attr("href");
 
-                List<ShopOptions> itemShopOptions = findShopOptions(itemUrlFromCatalog);
-
-                if (favoriteItemsList.size() == 10) {
-                    break;
-                } else {
-                    favoriteItemsList.add(new FavoriteItem(name, ParsedShop.WIGGLE, itemUrlFromCatalog, itemShopOptions, rangePrice));
-                }
+                itemsList.add(parseItemInfo(itemUrl));
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return favoriteItemsList;
+        return itemsList;
     }
 
-    private List<ShopOptions> findShopOptions(String urlToSearch) {
-        String itemUrl = urlToSearch + "?" + CURRENCY + COUNTRY;
-        List<ShopOptions> res = new ArrayList<>();
+    private Item parseItemInfo(String itemUrl) {
+        Item item = null;
         try {
-            Document doc = Jsoup.connect(itemUrl).get();
-            Elements options = doc
-                    .selectFirst("div.bem-sku-selector")
-                    .select("div.sku-items-children");
+            Document doc = Jsoup.connect(itemUrl + "?" + CURRENCY + COUNTRY).get();
 
-            for (Element option : options) {
-                String color = option.attr("data-colour");
-                if (!color.equals("null")) {
-                    Elements allSizesForColor = option.select("li.bem-sku-selector__option-group-item");
+            String name = doc.select("h1#productTitle").text();
+            String rangePrice = doc.select("p.bem-pricing__product-price,js-unit-price").text();
 
-                    for (Element element : allSizesForColor) {
-                        String size = element.select("span.bem-sku-selector__size").text();
-                        String price = element.select("span.bem-sku-selector__price").text()
-                                .replace(CURRENCY_SIGN, "")
-                                .replace(",", "");
-                        String status = element.select("span.bem-sku-selector__status-stock").text();
+            List<ItemOptions> itemOptions = parseItemOptions(doc);
 
-                        // change original status
-                        if (status.equals("Out of stock. Let me know when in stock.")) {
-                            status = "Out of stock";
-                        } else if (status.isEmpty()) {
-                            status = "In stock";
-                        }
-                        res.add(new ShopOptions(color, size, new BigDecimal(price), status));
-                    }
-                }
-            }
+            item = new Item(name, ParsedShop.WIGGLE, itemUrl, itemOptions, rangePrice);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        res.sort(Comparator.comparing(ShopOptions::getPrice)
-                .thenComparing(ShopOptions::getColor));
+        return item;
+    }
+
+    private List<ItemOptions> parseItemOptions(Document doc) {
+        List<ItemOptions> res = new ArrayList<>();
+
+        Elements options = doc
+                .selectFirst("div.bem-sku-selector")
+                .select("div.sku-items-children");
+
+        for (Element option : options) {
+            String color = option.attr("data-colour");
+            if (!color.equals("null")) {
+                Elements allSizesForColor = option.select("li.bem-sku-selector__option-group-item");
+
+                for (Element element : allSizesForColor) {
+                    String size = element.select("span.bem-sku-selector__size").text();
+                    String price = element.select("span.bem-sku-selector__price").text()
+                            .replace(CURRENCY_SIGN, "")
+                            .replace(",", "");
+                    String status = element.select("span.bem-sku-selector__status-stock").text();
+
+                    // change original status
+                    if (status.equals("Out of stock. Let me know when in stock.")) {
+                        status = "Out of stock";
+                    } else if (status.isEmpty()) {
+                        status = "In stock";
+                    }
+                    res.add(new ItemOptions(color, size, new BigDecimal(price), status));
+                }
+            }
+        }
+        res.sort(Comparator.comparing(ItemOptions::getPrice)
+                .thenComparing(ItemOptions::getColor));
 
         return res;
     }
@@ -132,29 +139,4 @@ public class WiggleParser {
 //        }
 //        return result.toString();
 //    }
-
-    private static void printResponse(List<FavoriteItem> itemsList) {
-        for (int i = 0; i < itemsList.size(); i++) {
-            String name = itemsList.get(i).getItemName();
-            String priceRange = itemsList.get(i).getRangePrice();
-            String url = itemsList.get(i).getURL();
-
-            System.out.println("No." + (i + 1) + " - " + name + " [" + priceRange + "]");
-            System.out.println("URL: " + url);
-
-            List<ShopOptions> optionsList = itemsList.get(i).getShopOptionsList();
-            for (ShopOptions options : optionsList) {
-                String size = options.getSize();
-                String color = options.getColor();
-                BigDecimal price = options.getPrice();
-                String status = options.getStatus();
-
-                System.out.println(CURRENCY_SIGN + price +
-                        (color.isEmpty() ? "" : " / " + color) +
-                        (size.isEmpty() ? "" : " / " + size) +
-                        " / [" + status + "]");
-            }
-            System.out.println();
-        }
-    }
 }

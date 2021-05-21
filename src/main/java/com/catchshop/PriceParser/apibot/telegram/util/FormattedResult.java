@@ -1,8 +1,8 @@
 package com.catchshop.PriceParser.apibot.telegram.util;
 
 import com.catchshop.PriceParser.apibot.telegram.PriceParserTelegramBot;
-import com.catchshop.PriceParser.bike.model.FavoriteItem;
-import com.catchshop.PriceParser.bike.model.ShopOptions;
+import com.catchshop.PriceParser.bike.model.Item;
+import com.catchshop.PriceParser.bike.model.ItemOptions;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -24,17 +24,17 @@ public class FormattedResult {
 
     public static final String CURRENCY_SIGN = "$"; // €
 
-    public void showWiggleResults(String chatId, List<FavoriteItem> itemList) {
+    public void showWiggleResults(String chatId, List<Item> itemList) {
         log.info("Format the Wiggle results, Total № of items: {}", itemList.size());
 
         int count = 1;
         StringBuilder result = new StringBuilder();
-        for (FavoriteItem item : itemList) {
-            result.append("<u>").append(count).append(" <a href=\"").append(item.getURL()).append("\">").append(item.getItemName())
+        for (Item item : itemList) {
+            result.append("<u>").append(count).append(" <a href=\"").append(item.getURL()).append("\">").append(item.getTitle())
                     .append("</a> [").append(item.getRangePrice()).append("]</u>").append("\n");
             count++;
 
-            for (ShopOptions options : item.getShopOptionsList()) {
+            for (ItemOptions options : item.getItemOptionsList()) {
                 result.append("<b>").append(CURRENCY_SIGN).append(options.getPrice()).append("</b>")
                         .append(options.getColor().isEmpty() ? "" : ", " + options.getColor())
                         .append(options.getSize().isEmpty() ? "" : ", " + options.getSize())
