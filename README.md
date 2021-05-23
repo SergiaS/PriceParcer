@@ -19,7 +19,9 @@
 - chainreactioncycles.com
 - bike-components.de
 - bike-discount.de
-- bike24.com
+- `bike24.com`
+  - but in future need to rebuild - parse status with Germany country, and parse price with chosen country to delivery
+  - maybe also will be interesting to comparing `DE_price + delivery + NP` and `UA_price + delivery`
 - ebay (com, de, co.uk, pl)
 
 and many others ...

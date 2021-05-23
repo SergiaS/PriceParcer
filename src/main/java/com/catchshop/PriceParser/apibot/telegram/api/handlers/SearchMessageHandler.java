@@ -9,6 +9,7 @@ import com.catchshop.PriceParser.apibot.telegram.service.ReplyMessageService;
 import com.catchshop.PriceParser.apibot.telegram.service.SearchMenuService;
 import com.catchshop.PriceParser.apibot.telegram.util.FormattedResult;
 import com.catchshop.PriceParser.bike.model.Item;
+import com.catchshop.PriceParser.bike.shops.bike24.Bike24Parser;
 import com.catchshop.PriceParser.bike.shops.wiggle.WiggleParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -47,9 +48,6 @@ public class SearchMessageHandler implements InputMessageHandler {
 //        Long userId = inputMessage.getFrom().getId();
         String chatId = inputMessage.getChatId().toString();
 
-//        UserProfile userProfile = userRepository.getUserProfile(userId);
-//        BotStatus botStatus = userRepository.getBotStatus(userId);
-
         SendMessage replyToUser = searchMenuService.getSearchMenuMessage(chatId, userText);
 
         if (userText.equals(localeMessageService.getMessage("button.menu.showSearch"))) {
@@ -59,14 +57,14 @@ public class SearchMessageHandler implements InputMessageHandler {
             telegramBot.sendMessage(replyMessageService.getReplyMessage(chatId, "reply.search.start"));
 
             WiggleParser wp = new WiggleParser();
-            List<Item> itemList = wp.wiggleSearcher(userText);
+            List<Item> wiggleItemsList = wp.wiggleSearcher(userText);
+            messageIfNotFound(chatId, wiggleItemsList, "$");
 
-            if (itemList.size() == 0) {
-                replyToUser.setText(localeMessageService.getMessage("reply.search.notFound"));
-            } else {
-                formattedResult.showWiggleResults(chatId, itemList);
-                replyToUser.setText(localeMessageService.getMessage("reply.search.end"));
-            }
+            Bike24Parser b24p = new Bike24Parser();
+            List<Item> bike24ItemsList = b24p.bike24Searcher(userText);
+            messageIfNotFound(chatId, bike24ItemsList, "€");
+
+            replyToUser.setText(localeMessageService.getMessage("reply.search.end"));
         }
         return replyToUser;
     }
@@ -74,5 +72,14 @@ public class SearchMessageHandler implements InputMessageHandler {
     @Override
     public BotStatus getHandleName() {
         return BotStatus.SHOW_SEARCH;
+    }
+
+    private void messageIfNotFound(String chatId, List<Item> items, String currency) {
+        if (items.size() == 0) {
+            telegramBot.sendMessage(new SendMessage(chatId, localeMessageService.getMessage("reply.search.notFound")));
+        } else {
+            telegramBot.sendMessage(new SendMessage(chatId, "Results:"));
+            formattedResult.showWiggleResults(chatId, items, currency);
+        }
     }
 }

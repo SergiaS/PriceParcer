@@ -86,7 +86,8 @@ public class ShopHelper {
                 String status = options.getStatus();
 
                 System.out.println(CURRENCY_SIGN + price +
-                        (group.isEmpty() ? "" : ", " + group) + ", " + status);
+                        (group.isEmpty() ? "" : ", " + group) +
+                        (status.isEmpty() ? "" : ", " + status));
             } else {
                 String size = options.getSize();
                 String color = options.getColor();
@@ -95,9 +96,18 @@ public class ShopHelper {
                 System.out.println(CURRENCY_SIGN + price +
                         (color.isEmpty() ? "" : ", " + color) +
                         (size.isEmpty() ? "" : ", " + size) +
-                        ", [" + status + "]");
+                        (status.isEmpty() ? "" : ", [" + status + "]"));
             }
         }
         System.out.println();
+    }
+
+    public static String cleanTitle(String inputText) {
+        return inputText
+                .replace("É","E")
+                .replace("é","e")
+                .replace("®", "")
+                .replace("™", "")
+            ;
     }
 }

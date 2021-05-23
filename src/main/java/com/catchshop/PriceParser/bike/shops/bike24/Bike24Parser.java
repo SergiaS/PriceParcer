@@ -66,7 +66,7 @@ public class Bike24Parser {
         try {
             Document doc = Jsoup.connect(itemUrl).get();
 
-            String name = doc.select("h1").text();
+            String name = ShopHelper.cleanTitle(doc.select("h1").text());
             String rangePrice;
 
             boolean isPriceFrom = doc.select("span.js-price-from").text().contains("from");
@@ -88,7 +88,6 @@ public class Bike24Parser {
 
     private List<ItemOptions> parseItemOptions(Document doc) {
         List<ItemOptions> res = new ArrayList<>();
-        ShopHelper.allowAllCertificates(); // very important!
 
         BigDecimal basePrice = new BigDecimal(doc.select("span.text-value,js-price-value")
                 .attr("content"));
@@ -122,6 +121,7 @@ public class Bike24Parser {
     // will remove info like " - add 0,84 €" and "head circumference"
     private static String cleanGroupValue(String group) {
         return group.replace(" head circumference", "")
+                .replace("not deliverable: Ø ", "")
                 .replaceAll("\\s-\\s(add)\\s[\\d]*,[\\d]*\\s€", "");
     }
 }

@@ -22,10 +22,8 @@ public class FormattedResult {
         this.telegramBot = telegramBot;
     }
 
-    public static final String CURRENCY_SIGN = "$"; // €
-
-    public void showWiggleResults(String chatId, List<Item> itemList) {
-        log.info("Format the Wiggle results, Total № of items: {}", itemList.size());
+    public void showWiggleResults(String chatId, List<Item> itemList, final String CURRENCY_SIGN) {
+        log.info("Format some shop results, Total № of items: {}", itemList.size());
 
         int count = 1;
         StringBuilder result = new StringBuilder();
@@ -35,10 +33,18 @@ public class FormattedResult {
             count++;
 
             for (ItemOptions options : item.getItemOptionsList()) {
-                result.append("<b>").append(CURRENCY_SIGN).append(options.getPrice()).append("</b>")
+                result.append("<b>").append(CURRENCY_SIGN).append(options.getPrice()).append("</b>");
+                if (options.getColor() == null) {
+                    result
+                        .append(options.getGroup().isEmpty() ? "" : ", " + options.getGroup())
+                        .append(options.getStatus().isEmpty() ? "" : ", " + options.getStatus());
+                } else {
+                    result
                         .append(options.getColor().isEmpty() ? "" : ", " + options.getColor())
                         .append(options.getSize().isEmpty() ? "" : ", " + options.getSize())
-                        .append(", ").append(options.getStatus()).append("\n");
+                        .append(options.getStatus().isEmpty() ? "" : ", " + options.getStatus());
+                }
+                result.append("\n");
             }
             if (result.length() > 3000) {
                 sendResultToTelegram(chatId, result.toString());
