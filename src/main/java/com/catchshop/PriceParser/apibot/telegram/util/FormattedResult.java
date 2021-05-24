@@ -28,27 +28,31 @@ public class FormattedResult {
         int count = 1;
         StringBuilder result = new StringBuilder();
         for (Item item : itemList) {
-            result.append("<u>").append(count).append(" <a href=\"").append(item.getURL()).append("\">").append(item.getTitle())
-                    .append("</a> [").append(item.getRangePrice()).append("]</u>").append("\n");
-            count++;
+            if (item == null) {
+                log.error("There is an error with item={}", item);
+            } else {
+                result.append("<u>").append(count).append(" <a href=\"").append(item.getURL()).append("\">").append(item.getTitle())
+                        .append("</a> [").append(item.getRangePrice()).append("]</u>").append("\n");
+                count++;
 
-            for (ItemOptions options : item.getItemOptionsList()) {
-                result.append("<b>").append(CURRENCY_SIGN).append(options.getPrice()).append("</b>");
-                if (options.getColor() == null) {
-                    result
-                        .append(options.getGroup().isEmpty() ? "" : ", " + options.getGroup())
-                        .append(options.getStatus().isEmpty() ? "" : ", " + options.getStatus());
-                } else {
-                    result
-                        .append(options.getColor().isEmpty() ? "" : ", " + options.getColor())
-                        .append(options.getSize().isEmpty() ? "" : ", " + options.getSize())
-                        .append(options.getStatus().isEmpty() ? "" : ", " + options.getStatus());
+                for (ItemOptions options : item.getItemOptionsList()) {
+                    result.append("<b>").append(CURRENCY_SIGN).append(options.getPrice()).append("</b>");
+                    if (options.getColor() == null) {
+                        result
+                            .append(options.getGroup().isEmpty() ? "" : ", " + options.getGroup())
+                            .append(options.getStatus().isEmpty() ? "" : ", " + options.getStatus());
+                    } else {
+                        result
+                            .append(options.getColor().isEmpty() ? "" : ", " + options.getColor())
+                            .append(options.getSize().isEmpty() ? "" : ", " + options.getSize())
+                            .append(options.getStatus().isEmpty() ? "" : ", " + options.getStatus());
+                    }
+                    result.append("\n");
                 }
-                result.append("\n");
-            }
-            if (result.length() > 3000) {
-                sendResultToTelegram(chatId, result.toString());
-                result.setLength(0);
+                if (result.length() > 3000) {
+                    sendResultToTelegram(chatId, result.toString());
+                    result.setLength(0);
+                }
             }
         }
         sendResultToTelegram(chatId, result.toString());

@@ -38,6 +38,7 @@ public class Bike24Parser {
         String catalogUrl = SITE + SEARCH + textToSearch + SORT_BY;
 
         List<Item> itemsList = new ArrayList<>();
+        ShopHelper.allowAllCertificates(); // very important!
         try {
             Document doc = Jsoup.connect(catalogUrl)
                     .timeout(10000)
