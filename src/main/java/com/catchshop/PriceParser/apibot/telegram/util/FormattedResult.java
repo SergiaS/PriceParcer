@@ -23,7 +23,7 @@ public class FormattedResult {
     }
 
     public void showWiggleResults(String chatId, List<Item> itemList, final String CURRENCY_SIGN) {
-        log.info("Format some shop results, Total № of items: {}", itemList.size());
+        log.info("Format {} shop results, Total № of items: {}", itemList.get(0).getShop(), itemList.size());
 
         int count = 1;
         StringBuilder result = new StringBuilder();

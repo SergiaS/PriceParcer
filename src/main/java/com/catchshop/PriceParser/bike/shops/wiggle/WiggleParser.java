@@ -3,6 +3,7 @@ package com.catchshop.PriceParser.bike.shops.wiggle;
 import com.catchshop.PriceParser.bike.enums.ParsedShop;
 import com.catchshop.PriceParser.bike.model.Item;
 import com.catchshop.PriceParser.bike.model.ItemOptions;
+import com.catchshop.PriceParser.bike.model.Shop;
 import com.catchshop.PriceParser.bike.util.ShopHelper;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -18,20 +19,23 @@ import java.util.List;
 /**
  * Can parse first 48 positions (first page) and specific position by url of Wiggle.
  * Returns sorted result - positions by price and their options by price and color.
+ *
+ * Restricted to 25 items! Too long message (for example hit "Five Ten Freeride")
  */
 
 public class WiggleParser {
     public static final String CURRENCY_TEXT = "USD"; // EUR
-    public static final String CURRENCY_SIGN = "$"; // €
     private final String SITE = "https://www.wiggle.co.uk/?s=";
     private final String SORT_BY = "&o=2"; // site sort - second parameter (Price: Low to High)
     private final String IN_STOCK_ONLY = "&ris=1";
     private final String CURRENCY = "curr=" + CURRENCY_TEXT;
     private final String COUNTRY = "&prevDestCountryId=99&dest=1";
 
+    private Shop wiggleShop = getShop();
+
     public static void main(String[] args) {
         WiggleParser wp = new WiggleParser();
-        ShopHelper.printItems(wp.wiggleSearcher("castelli gloves white"), CURRENCY_SIGN);
+        ShopHelper.printItems(wp.wiggleSearcher("castelli gloves white"));
 
 //        ShopHelper.printItem(wp.parseItemInfo("https://www.wiggle.co.uk/castelli-arenberg-gel-2-cycling-gloves"), CURRENCY_SIGN);
     }
@@ -59,6 +63,7 @@ public class WiggleParser {
                 String itemUrl = item.select("a.bem-product-thumb__name--grid").attr("href");
 
                 itemsList.add(parseItemInfo(itemUrl));
+                if (itemsList.size() == 25) break;
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -76,7 +81,7 @@ public class WiggleParser {
 
             List<ItemOptions> itemOptions = parseItemOptions(doc);
 
-            item = new Item(name, ParsedShop.WIGGLE, itemUrl, itemOptions, rangePrice);
+            item = new Item(name, wiggleShop, itemUrl, itemOptions, rangePrice);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -98,7 +103,7 @@ public class WiggleParser {
                 for (Element element : allSizesForColor) {
                     String size = element.select("span.bem-sku-selector__size").text();
                     String price = element.select("span.bem-sku-selector__price").text()
-                            .replace(CURRENCY_SIGN, "")
+                            .replace(wiggleShop.getChosenCurrency(), "")
                             .replace(",", "");
                     String status = element.select("span.bem-sku-selector__status-stock").text();
 
@@ -116,6 +121,17 @@ public class WiggleParser {
                 .thenComparing(ItemOptions::getColor));
 
         return res;
+    }
+
+    private Shop getShop() {
+        return new Shop(
+                ParsedShop.WIGGLE,
+                "wiggle.co.uk",
+                true,
+                "$",
+                "United Kingdom",
+                "United Kingdom",
+                "n/a");
     }
 
 //    public String getFormattedResult(List<FavoriteItem> itemList) {

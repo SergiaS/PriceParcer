@@ -3,6 +3,7 @@ package com.catchshop.PriceParser.bike.shops.bike24;
 import com.catchshop.PriceParser.bike.enums.ParsedShop;
 import com.catchshop.PriceParser.bike.model.Item;
 import com.catchshop.PriceParser.bike.model.ItemOptions;
+import com.catchshop.PriceParser.bike.model.Shop;
 import com.catchshop.PriceParser.bike.util.ShopHelper;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -21,17 +22,17 @@ import java.util.List;
  * Returns sorted result - positions and their options by price.
  */
 public class Bike24Parser {
-    public static final String CURRENCY_TEXT = "EUR";
-    public static final String CURRENCY_SIGN = "€";
     private final String SITE = "https://www.bike24.com";
     private final String SEARCH = "/search?searchTerm=";
     private final String SORT_BY = "&sort=price_asc";
 
+    private Shop bike24Shop = getShop();
+
     public static void main(String[] args) {
         Bike24Parser b24 = new Bike24Parser();
-        ShopHelper.printItems(b24.bike24Searcher("giro syntax"), CURRENCY_SIGN);
+        ShopHelper.printItems(b24.bike24Searcher("giro syntax"));
 
-//        ShopHelper.printItem(b24.parseItemInfo("https://www.bike24.com/p2276744.html"), CURRENCY_SIGN);
+//        ShopHelper.printItem(b24.parseItemInfo("https://www.bike24.com/p2276744.html"));
     }
 
     public List<Item> bike24Searcher(String textToSearch) {
@@ -72,14 +73,14 @@ public class Bike24Parser {
 
             boolean isPriceFrom = doc.select("span.js-price-from").text().contains("from");
             if (isPriceFrom) {
-                rangePrice = "from " + CURRENCY_SIGN + doc.select("span.text-value,js-price-value").attr("content");
+                rangePrice = "from " + bike24Shop.getChosenCurrency() + doc.select("span.text-value,js-price-value").attr("content");
             } else {
-                rangePrice = CURRENCY_SIGN + doc.select("span.text-value,js-price-value").attr("content");
+                rangePrice = bike24Shop.getChosenCurrency() + doc.select("span.text-value,js-price-value").attr("content");
             }
 
             List<ItemOptions> itemOptionsList = parseItemOptions(doc);
 
-            item = new Item(name, ParsedShop.BIKE24, itemUrl, itemOptionsList, rangePrice);
+            item = new Item(name, bike24Shop, itemUrl, itemOptionsList, rangePrice);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -122,7 +123,18 @@ public class Bike24Parser {
     // will remove info like " - add 0,84 €" and "head circumference"
     private static String cleanGroupValue(String group) {
         return group.replace(" head circumference", "")
-                .replace("not deliverable: Ø ", "")
+                .replace("not deliverable: ", "")
                 .replaceAll("\\s-\\s(add)\\s[\\d]*,[\\d]*\\s€", "");
+    }
+
+    private Shop getShop() {
+        return new Shop(
+                ParsedShop.BIKE24,
+                "bike24.com",
+                false,
+                "€",
+                "Germany",
+                "Germany",
+                "n/a");
     }
 }

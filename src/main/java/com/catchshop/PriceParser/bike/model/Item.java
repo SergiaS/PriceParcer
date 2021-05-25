@@ -1,20 +1,18 @@
 package com.catchshop.PriceParser.bike.model;
 
-import com.catchshop.PriceParser.bike.enums.ParsedShop;
-
 import java.util.List;
 import java.util.Objects;
 
 public class Item {
     private final String title;
-    private final ParsedShop shopName;
+    private final Shop shop;
     private final String URL;
     private final List<ItemOptions> itemOptionsList;
     private final String rangePrice;
 
-    public Item(String title, ParsedShop shopName, String URL, List<ItemOptions> itemOptionsList, String rangePrice) {
+    public Item(String title, Shop shop, String URL, List<ItemOptions> itemOptionsList, String rangePrice) {
         this.title = title;
-        this.shopName = shopName;
+        this.shop = shop;
         this.URL = URL;
         this.itemOptionsList = itemOptionsList;
         this.rangePrice = rangePrice;
@@ -24,8 +22,8 @@ public class Item {
         return title;
     }
 
-    public ParsedShop getShopName() {
-        return shopName;
+    public Shop getShop() {
+        return shop;
     }
 
     public String getURL() {
@@ -45,19 +43,19 @@ public class Item {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Item that = (Item) o;
-        return Objects.equals(title, that.title) && shopName == that.shopName && Objects.equals(URL, that.URL) && Objects.equals(itemOptionsList, that.itemOptionsList) && Objects.equals(rangePrice, that.rangePrice);
+        return Objects.equals(title, that.title) && shop == that.shop && Objects.equals(URL, that.URL) && Objects.equals(itemOptionsList, that.itemOptionsList) && Objects.equals(rangePrice, that.rangePrice);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(title, shopName, URL, itemOptionsList, rangePrice);
+        return Objects.hash(title, shop, URL, itemOptionsList, rangePrice);
     }
 
     @Override
     public String toString() {
         return "Item{" +
                 "title='" + title + '\'' +
-                ", shopName=" + shopName +
+                ", shop=" + shop +
                 ", URL='" + URL + '\'' +
                 ", itemOptionsList=" + itemOptionsList +
                 ", rangePrice='" + rangePrice + '\'' +

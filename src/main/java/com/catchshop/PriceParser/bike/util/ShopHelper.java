@@ -52,40 +52,42 @@ public class ShopHelper {
         }
     }
 
-    public static void printItem(final Item item, final String CURRENCY_SIGN) {
+    public static void printItem(final Item item) {
         String title = item.getTitle();
         String rangePrice = item.getRangePrice();
         String url = item.getURL();
+        String currency = item.getShop().getChosenCurrency();
 
         System.out.println("No." + (itemCount++) + " - " + title + " [" + rangePrice + "]");
         System.out.println("URL: " + url);
 
         List<ItemOptions> shopOptionsList = item.getItemOptionsList();
-        printShopOptions(shopOptionsList, CURRENCY_SIGN);
+        printShopOptions(shopOptionsList, currency);
     }
 
-    public static void printItems(List<Item> itemsList, final String CURRENCY_SIGN) {
+    public static void printItems(List<Item> itemsList) {
         for (int i = 0; i < itemsList.size(); i++) {
             String title = itemsList.get(i).getTitle();
             String priceRange = itemsList.get(i).getRangePrice();
             String url = itemsList.get(i).getURL();
+            String currency = itemsList.get(i).getShop().getChosenCurrency();
 
             System.out.println("No." + (i + 1) + " - " + title + " [" + priceRange + "]");
             System.out.println("URL: " + url);
 
             List<ItemOptions> optionsList = itemsList.get(i).getItemOptionsList();
-            printShopOptions(optionsList, CURRENCY_SIGN);
+            printShopOptions(optionsList, currency);
         }
     }
 
-    private static void printShopOptions(List<ItemOptions> optionsList, final String CURRENCY_SIGN) {
+    private static void printShopOptions(List<ItemOptions> optionsList, String currency) {
         for (ItemOptions options : optionsList) {
             if (options.getColor() == null) {
                 String group = options.getGroup();
                 BigDecimal price = options.getPrice();
                 String status = options.getStatus();
 
-                System.out.println(CURRENCY_SIGN + price +
+                System.out.println(currency + price +
                         (group.isEmpty() ? "" : ", " + group) +
                         (status.isEmpty() ? "" : ", " + status));
             } else {
@@ -93,7 +95,7 @@ public class ShopHelper {
                 String color = options.getColor();
                 BigDecimal price = options.getPrice();
                 String status = options.getStatus();
-                System.out.println(CURRENCY_SIGN + price +
+                System.out.println(currency + price +
                         (color.isEmpty() ? "" : ", " + color) +
                         (size.isEmpty() ? "" : ", " + size) +
                         (status.isEmpty() ? "" : ", [" + status + "]"));
