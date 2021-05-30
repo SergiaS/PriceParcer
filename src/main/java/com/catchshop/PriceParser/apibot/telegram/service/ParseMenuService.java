@@ -1,6 +1,8 @@
 package com.catchshop.PriceParser.apibot.telegram.service;
 
 import com.catchshop.PriceParser.apibot.telegram.PriceParserTelegramBot;
+import com.catchshop.PriceParser.apibot.telegram.api.BotStatus;
+import com.catchshop.PriceParser.apibot.telegram.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -13,43 +15,52 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class SearchMenuService {
+public class ParseMenuService {
 
     private final LocaleMessageService localeMessageService;
     private final PriceParserTelegramBot telegramBot;
+    private final UserRepository userRepository;
 
     @Autowired
-    public SearchMenuService(LocaleMessageService localeMessageService, @Lazy PriceParserTelegramBot telegramBot) {
+    public ParseMenuService(LocaleMessageService localeMessageService, @Lazy PriceParserTelegramBot telegramBot, UserRepository userRepository) {
         this.localeMessageService = localeMessageService;
         this.telegramBot = telegramBot;
+        this.userRepository = userRepository;
     }
 
-    public SendMessage getSearchMenuMessage(String chatId, String userMsg) {
-        ReplyKeyboardMarkup replyKeyboardMarkup = getSearchMenuKeyboard();
+    public SendMessage getParseMenu(String chatId, String userMsg) {
+        ReplyKeyboardMarkup replyKeyboardMarkup = getParseMenuKeyboard(Long.valueOf(chatId));
         return createMessageWithKeyboard(chatId, userMsg, replyKeyboardMarkup);
     }
 
-    private ReplyKeyboardMarkup getSearchMenuKeyboard() {
+    private ReplyKeyboardMarkup getParseMenuKeyboard(Long chatId) {
+        List<KeyboardRow> keyboard = new ArrayList<>();
+        if (userRepository.getBotStatus(chatId).equals(BotStatus.SHOW_PARSE_END)){
+            keyboard.add(addKeyboardRowByMessage("button.menu.showParse"));
+            keyboard.add(addKeyboardRowByMessage("button.menu.showFavorites"));
+        }
+        keyboard.add(addKeyboardRowByMessage("button.menu.showMenu"));
+
         ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
         replyKeyboardMarkup.setSelective(true);
         replyKeyboardMarkup.setResizeKeyboard(true);
         replyKeyboardMarkup.setOneTimeKeyboard(false);
 
-        KeyboardRow row1 = new KeyboardRow();
-        row1.add(new KeyboardButton(localeMessageService.getMessage("button.menu.showMenu")));
-
-        List<KeyboardRow> keyboard = new ArrayList<>();
-        keyboard.add(row1);
-
         replyKeyboardMarkup.setKeyboard(keyboard);
         return replyKeyboardMarkup;
     }
 
-    private SendMessage createMessageWithKeyboard(final String chatId, String textMessage, final ReplyKeyboardMarkup replyKeyboardMarkup) {
-        final SendMessage sendMessage = new SendMessage();
+    private KeyboardRow addKeyboardRowByMessage(String msg) {
+        KeyboardRow row = new KeyboardRow();
+        row.add(new KeyboardButton(localeMessageService.getMessage(msg)));
+        return row;
+    }
+
+    private SendMessage createMessageWithKeyboard(String chatId, String userMsg, ReplyKeyboardMarkup replyKeyboardMarkup) {
+        final  SendMessage sendMessage = new SendMessage();
         sendMessage.enableMarkdown(true);
         sendMessage.setChatId(chatId);
-        sendMessage.setText(textMessage);
+        sendMessage.setText(userMsg);
 
         if (replyKeyboardMarkup != null) {
             sendMessage.setReplyMarkup(replyKeyboardMarkup);

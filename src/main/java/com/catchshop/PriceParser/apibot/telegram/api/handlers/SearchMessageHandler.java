@@ -58,11 +58,11 @@ public class SearchMessageHandler implements InputMessageHandler {
 
             WiggleParser wp = new WiggleParser();
             List<Item> wiggleItemsList = wp.wiggleSearcher(userText);
-            messageIfNotFound(chatId, wiggleItemsList, "$");
+            messageIfNotFound(chatId, wiggleItemsList);
 
             Bike24Parser b24p = new Bike24Parser();
             List<Item> bike24ItemsList = b24p.bike24Searcher(userText);
-            messageIfNotFound(chatId, bike24ItemsList, "€");
+            messageIfNotFound(chatId, bike24ItemsList);
 
             replyToUser.setText(localeMessageService.getMessage("reply.search.end"));
         }
@@ -74,12 +74,12 @@ public class SearchMessageHandler implements InputMessageHandler {
         return BotStatus.SHOW_SEARCH;
     }
 
-    private void messageIfNotFound(String chatId, List<Item> items, String currency) {
+    private void messageIfNotFound(String chatId, List<Item> items) {
         if (items.size() == 0) {
-            telegramBot.sendMessage(new SendMessage(chatId, localeMessageService.getMessage("reply.search.notFound")));
+            telegramBot.sendMessage(new SendMessage(chatId, localeMessageService.getMessage("reply.notFound")));
         } else {
             telegramBot.sendMessage(new SendMessage(chatId, "Results:"));
-            formattedResult.showWiggleResults(chatId, items, currency);
+            formattedResult.showShopsFormattedResults(chatId, items);
         }
     }
 }

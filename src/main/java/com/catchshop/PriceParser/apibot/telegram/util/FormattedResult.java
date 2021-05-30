@@ -22,7 +22,31 @@ public class FormattedResult {
         this.telegramBot = telegramBot;
     }
 
-    public void showWiggleResults(String chatId, List<Item> itemList, final String CURRENCY_SIGN) {
+    public void showItemFormattedResults(String chatId, Item item) {
+        log.info("Item results: {}", item);
+
+        StringBuilder result = new StringBuilder();
+        result.append("<u>").append("<a href=\"").append(item.getURL()).append("\">").append(item.getTitle())
+                .append("</a> [").append(item.getRangePrice()).append("]</u>").append("\n");
+
+        for (ItemOptions options : item.getItemOptionsList()) {
+            result.append("<b>").append(item.getShop().getChosenCurrency()).append(options.getPrice()).append("</b>");
+            if (options.getColor() == null) {
+                result
+                    .append(options.getGroup().isEmpty() ? "" : ", " + options.getGroup())
+                    .append(options.getStatus().isEmpty() ? "" : ", " + options.getStatus());
+            } else {
+                result
+                    .append(options.getColor().isEmpty() ? "" : ", " + options.getColor())
+                    .append(options.getSize().isEmpty() ? "" : ", " + options.getSize())
+                    .append(options.getStatus().isEmpty() ? "" : ", " + options.getStatus());
+            }
+            result.append("\n");
+        }
+        sendResultToTelegram(chatId, result.toString());
+    }
+
+    public void showShopsFormattedResults(String chatId, List<Item> itemList) {
         log.info("Format {} shop results, Total № of items: {}", itemList.get(0).getShop(), itemList.size());
 
         int count = 1;
@@ -36,7 +60,7 @@ public class FormattedResult {
                 count++;
 
                 for (ItemOptions options : item.getItemOptionsList()) {
-                    result.append("<b>").append(CURRENCY_SIGN).append(options.getPrice()).append("</b>");
+                    result.append("<b>").append(item.getShop().getChosenCurrency()).append(options.getPrice()).append("</b>");
                     if (options.getColor() == null) {
                         result
                             .append(options.getGroup().isEmpty() ? "" : ", " + options.getGroup())

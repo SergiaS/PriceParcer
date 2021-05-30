@@ -7,13 +7,24 @@ public class Item {
     private final String title;
     private final Shop shop;
     private final String URL;
+    private ItemOptions tempItemOptions;
     private final List<ItemOptions> itemOptionsList;
     private final String rangePrice;
+
+    public Item(String title, Shop shop, String URL, ItemOptions tempItemOptions, String rangePrice) {
+        this.title = title;
+        this.shop = shop;
+        this.URL = URL;
+        this.tempItemOptions = tempItemOptions;
+        this.itemOptionsList = null;
+        this.rangePrice = rangePrice;
+    }
 
     public Item(String title, Shop shop, String URL, List<ItemOptions> itemOptionsList, String rangePrice) {
         this.title = title;
         this.shop = shop;
         this.URL = URL;
+        this.tempItemOptions = null;
         this.itemOptionsList = itemOptionsList;
         this.rangePrice = rangePrice;
     }
@@ -30,6 +41,14 @@ public class Item {
         return URL;
     }
 
+    public ItemOptions getTempItemOptions() {
+        return tempItemOptions;
+    }
+
+    public void setTempItemOptions(ItemOptions tempItemOptions) {
+        this.tempItemOptions = tempItemOptions;
+    }
+
     public List<ItemOptions> getItemOptionsList() {
         return itemOptionsList;
     }
@@ -42,13 +61,13 @@ public class Item {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Item that = (Item) o;
-        return Objects.equals(title, that.title) && shop == that.shop && Objects.equals(URL, that.URL) && Objects.equals(itemOptionsList, that.itemOptionsList) && Objects.equals(rangePrice, that.rangePrice);
+        Item item = (Item) o;
+        return Objects.equals(title, item.title) && Objects.equals(shop, item.shop) && Objects.equals(URL, item.URL) && Objects.equals(tempItemOptions, item.tempItemOptions) && Objects.equals(itemOptionsList, item.itemOptionsList) && Objects.equals(rangePrice, item.rangePrice);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(title, shop, URL, itemOptionsList, rangePrice);
+        return Objects.hash(title, shop, URL, tempItemOptions, itemOptionsList, rangePrice);
     }
 
     @Override

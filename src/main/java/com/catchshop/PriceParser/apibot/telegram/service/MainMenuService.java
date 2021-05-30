@@ -35,6 +35,7 @@ public class MainMenuService {
         KeyboardRow row2 = new KeyboardRow();
         KeyboardRow row3 = new KeyboardRow();
         row1.add(new KeyboardButton(localeMessageService.getMessage("button.menu.showSearch")));
+        row1.add(new KeyboardButton(localeMessageService.getMessage("button.menu.showParse")));
         row2.add(new KeyboardButton(localeMessageService.getMessage("button.menu.showFavorites")));
         row3.add(new KeyboardButton(localeMessageService.getMessage("button.menu.showLanguages")));
 

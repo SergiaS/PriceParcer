@@ -28,6 +28,8 @@ public class BotStatusContext {
     private InputMessageHandler findMessageHandler(BotStatus currentStatus) {
         if (currentStatus.equals(BotStatus.SHOW_SEARCH)) {
             return messageHandlers.get(BotStatus.SHOW_SEARCH);
+        } else if (isParseActions(currentStatus)) {
+            return messageHandlers.get(BotStatus.SHOW_PARSE);
         } else if (currentStatus.equals(BotStatus.SHOW_FAVORITE)) {
             return messageHandlers.get(BotStatus.SHOW_FAVORITE);
         } else if (currentStatus.equals(BotStatus.SHOW_LANGUAGES)) {
@@ -36,5 +38,18 @@ public class BotStatusContext {
             return messageHandlers.get(BotStatus.SHOW_ERROR);
         }
         return messageHandlers.get(BotStatus.SHOW_MENU);
+    }
+
+    private boolean isParseActions(BotStatus currentState) {
+        switch (currentState) {
+            case SHOW_PARSE:
+            case SHOW_PARSE_END:
+            case ASK_COLOR:
+            case ASK_SIZE:
+            case ASK_GROUP:
+                return true;
+            default:
+                return false;
+        }
     }
 }

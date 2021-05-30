@@ -1,6 +1,7 @@
 package com.catchshop.PriceParser.bike.model;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 
 public class ItemOptions {
     private String group; // comboField
@@ -41,4 +42,38 @@ public class ItemOptions {
     public String getStatus() {
         return status;
     }
+
+    public void setGroup(String group) {
+        this.group = group;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
+    }
+
+    public void setSize(String size) {
+        this.size = size;
+    }
+
+    public void setPrice(BigDecimal price) {
+        this.price = price;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ItemOptions that = (ItemOptions) o;
+        return Objects.equals(group, that.group) && Objects.equals(color, that.color) && Objects.equals(size, that.size) && Objects.equals(price, that.price) && Objects.equals(status, that.status);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(group, color, size, price, status);
+    }
 }
+

@@ -2,6 +2,8 @@ package com.catchshop.PriceParser.bike.model;
 
 import com.catchshop.PriceParser.bike.enums.ParsedShop;
 
+import java.util.Objects;
+
 /**
  * Shop model is contain all setting about shop
  */
@@ -62,6 +64,19 @@ public class Shop {
 
     public void setDeliveryCost(String deliveryCost) {
         this.deliveryCost = deliveryCost;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Shop shop = (Shop) o;
+        return isChangeableCurrency == shop.isChangeableCurrency && name == shop.name && Objects.equals(url, shop.url) && Objects.equals(chosenCurrency, shop.chosenCurrency) && Objects.equals(originalCountry, shop.originalCountry) && Objects.equals(deliveryCountry, shop.deliveryCountry) && Objects.equals(deliveryCost, shop.deliveryCost);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, url, isChangeableCurrency, chosenCurrency, originalCountry, deliveryCountry, deliveryCost);
     }
 
     @Override

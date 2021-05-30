@@ -61,7 +61,7 @@ public class Bike24Parser {
         return itemsList;
     }
 
-    private Item parseItemInfo(String itemUrl) {
+    public Item parseItemInfo(String itemUrl) {
         ShopHelper.allowAllCertificates(); // very important!
 
         Item item = null;
@@ -81,6 +81,7 @@ public class Bike24Parser {
             List<ItemOptions> itemOptionsList = parseItemOptions(doc);
 
             item = new Item(name, bike24Shop, itemUrl, itemOptionsList, rangePrice);
+            item.setTempItemOptions(new ItemOptions("", BigDecimal.ZERO, ""));
         } catch (IOException e) {
             e.printStackTrace();
         }

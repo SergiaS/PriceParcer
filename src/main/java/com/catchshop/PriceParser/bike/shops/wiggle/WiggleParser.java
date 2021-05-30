@@ -71,7 +71,7 @@ public class WiggleParser {
         return itemsList;
     }
 
-    private Item parseItemInfo(String itemUrl) {
+    public Item parseItemInfo(String itemUrl) {
         Item item = null;
         try {
             Document doc = Jsoup.connect(itemUrl + "?" + CURRENCY + COUNTRY).get();
@@ -82,6 +82,7 @@ public class WiggleParser {
             List<ItemOptions> itemOptions = parseItemOptions(doc);
 
             item = new Item(name, wiggleShop, itemUrl, itemOptions, rangePrice);
+            item.setTempItemOptions(new ItemOptions("", "", BigDecimal.ZERO, ""));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -134,7 +135,7 @@ public class WiggleParser {
                 "n/a");
     }
 
-//    public String getFormattedResult(List<FavoriteItem> itemList) {
+//    public String getFormattedResult(Item item) {
 //        if (itemList.size() == 0) {
 //            return "Nothing was found";
 //        }
