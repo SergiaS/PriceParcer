@@ -82,7 +82,7 @@ public class WiggleParser {
             List<ItemOptions> itemOptions = parseItemOptions(doc);
 
             item = new Item(name, wiggleShop, itemUrl, itemOptions, rangePrice);
-            item.setTempItemOptions(new ItemOptions("", "", BigDecimal.ZERO, ""));
+            item.setTempItemOptions(new ItemOptions(null, null, BigDecimal.ZERO, null));
         } catch (IOException e) {
             e.printStackTrace();
         }

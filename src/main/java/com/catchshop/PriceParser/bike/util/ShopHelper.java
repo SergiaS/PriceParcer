@@ -88,17 +88,17 @@ public class ShopHelper {
                 String status = options.getStatus();
 
                 System.out.println(currency + price +
-                        (group.isEmpty() ? "" : ", " + group) +
-                        (status.isEmpty() ? "" : ", " + status));
+                        (group == null ? "" : ", " + group) +
+                        (status == null ? "" : ", " + status));
             } else {
                 String size = options.getSize();
                 String color = options.getColor();
                 BigDecimal price = options.getPrice();
                 String status = options.getStatus();
                 System.out.println(currency + price +
-                        (color.isEmpty() ? "" : ", " + color) +
-                        (size.isEmpty() ? "" : ", " + size) +
-                        (status.isEmpty() ? "" : ", [" + status + "]"));
+                        (color == null ? "" : ", " + color) +
+                        (size == null ? "" : ", " + size) +
+                        (status == null ? "" : ", [" + status + "]"));
             }
         }
         System.out.println();
@@ -111,5 +111,9 @@ public class ShopHelper {
                 .replace("®", "")
                 .replace("™", "")
             ;
+    }
+
+    public static String returnNullIfEmpty(String text) {
+        return text.equals("") ? null : text;
     }
 }

@@ -16,6 +16,7 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Can parse first 30 positions (first page) and specific position by url of Bike24.
@@ -30,9 +31,9 @@ public class Bike24Parser {
 
     public static void main(String[] args) {
         Bike24Parser b24 = new Bike24Parser();
-        ShopHelper.printItems(b24.bike24Searcher("giro syntax"));
+//        ShopHelper.printItems(b24.bike24Searcher("giro syntax"));
 
-//        ShopHelper.printItem(b24.parseItemInfo("https://www.bike24.com/p2276744.html"));
+        ShopHelper.printItem(b24.parseItemInfo("https://www.bike24.com/p2382639.html"));
     }
 
     public List<Item> bike24Searcher(String textToSearch) {
@@ -81,7 +82,7 @@ public class Bike24Parser {
             List<ItemOptions> itemOptionsList = parseItemOptions(doc);
 
             item = new Item(name, bike24Shop, itemUrl, itemOptionsList, rangePrice);
-            item.setTempItemOptions(new ItemOptions("", BigDecimal.ZERO, ""));
+            item.setTempItemOptions(new ItemOptions(null, BigDecimal.ZERO, null));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -101,7 +102,8 @@ public class Bike24Parser {
 
         if (optionsMenu.isEmpty()) {
             String status = doc.select("span.js-current-stock-label,text-av-green").text();
-            res.add(new ItemOptions("", basePrice, status));
+            status = ShopHelper.returnNullIfEmpty(status);
+            res.add(new ItemOptions(null, basePrice, status));
         } else {
             Elements optionsList = doc.select("table.table-availability")
                     .select("tbody")
@@ -117,7 +119,6 @@ public class Bike24Parser {
             }
         }
         res.sort(Comparator.comparing(ItemOptions::getPrice));
-
         return res;
     }
 

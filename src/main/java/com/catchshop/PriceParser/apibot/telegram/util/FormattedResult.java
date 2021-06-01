@@ -33,13 +33,13 @@ public class FormattedResult {
             result.append("<b>").append(item.getShop().getChosenCurrency()).append(options.getPrice()).append("</b>");
             if (options.getColor() == null) {
                 result
-                    .append(options.getGroup().isEmpty() ? "" : ", " + options.getGroup())
-                    .append(options.getStatus().isEmpty() ? "" : ", " + options.getStatus());
+                    .append(options.getGroup() == null ? "" : ", " + options.getGroup())
+                    .append(options.getStatus() == null ? "" : ", " + options.getStatus());
             } else {
                 result
-                    .append(options.getColor().isEmpty() ? "" : ", " + options.getColor())
-                    .append(options.getSize().isEmpty() ? "" : ", " + options.getSize())
-                    .append(options.getStatus().isEmpty() ? "" : ", " + options.getStatus());
+                    .append(options.getColor() == null ? "" : ", " + options.getColor())
+                    .append(options.getSize() == null ? "" : ", " + options.getSize())
+                    .append(options.getStatus() == null ? "" : ", " + options.getStatus());
             }
             result.append("\n");
         }
@@ -63,13 +63,13 @@ public class FormattedResult {
                     result.append("<b>").append(item.getShop().getChosenCurrency()).append(options.getPrice()).append("</b>");
                     if (options.getColor() == null) {
                         result
-                            .append(options.getGroup().isEmpty() ? "" : ", " + options.getGroup())
-                            .append(options.getStatus().isEmpty() ? "" : ", " + options.getStatus());
+                            .append(options.getGroup() == null ? "" : ", " + options.getGroup())
+                            .append(options.getStatus() == null ? "" : ", " + options.getStatus());
                     } else {
                         result
-                            .append(options.getColor().isEmpty() ? "" : ", " + options.getColor())
-                            .append(options.getSize().isEmpty() ? "" : ", " + options.getSize())
-                            .append(options.getStatus().isEmpty() ? "" : ", " + options.getStatus());
+                            .append(options.getColor() == null ? "" : ", " + options.getColor())
+                            .append(options.getSize() == null ? "" : ", " + options.getSize())
+                            .append(options.getStatus() == null ? "" : ", " + options.getStatus());
                     }
                     result.append("\n");
                 }

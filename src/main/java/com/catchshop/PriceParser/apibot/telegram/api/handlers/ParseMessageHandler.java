@@ -85,10 +85,13 @@ public class ParseMessageHandler implements InputMessageHandler {
                     UserProfile userProfile = userRepository.getUserProfile(userId);
                     userProfile.setTmpParsedItem(parseItemInfo);
 
-                    if (parseItemInfo.getItemOptionsList().get(0).getGroup() == null) {
+                    ItemOptions itemOptions = parseItemInfo.getItemOptionsList().get(0);
+                    if (itemOptions.getGroup() != null) {
+                        botStatus = BotStatus.ASK_GROUP;
+                    } else if (itemOptions.getColor() != null) {
                         botStatus = BotStatus.ASK_COLOR;
                     } else {
-                        botStatus = BotStatus.ASK_GROUP;
+                        botStatus = BotStatus.ASK_TRACKING;
                     }
                     userProfile.setBotStatus(botStatus);
                     userRepository.saveUserProfile(Long.valueOf(chatId), userProfile);
@@ -104,38 +107,50 @@ public class ParseMessageHandler implements InputMessageHandler {
             if (tmpParsedItem.getItemOptionsList().get(0).getGroup() == null) {
                 if (botStatus.equals(BotStatus.ASK_COLOR)) {
                     replyToUser.setText(localeMessageService.getMessage("reply.parse.askColor"));
-                    replyToUser.setReplyMarkup(getInlineButtons(botStatus, tmpParsedItem));
+                    replyToUser.setReplyMarkup(getInlineOptionButtons(botStatus, tmpParsedItem));
                 } else if (botStatus.equals(BotStatus.ASK_SIZE)) {
                     replyToUser.setText(localeMessageService.getMessage("reply.parse.askSize"));
-                    replyToUser.setReplyMarkup(getInlineButtons(botStatus, tmpParsedItem));
+                    replyToUser.setReplyMarkup(getInlineOptionButtons(botStatus, tmpParsedItem));
                 }
             } else /* if (botStatus.equals(BotStatus.ASK_GROUP)) */ {
                 replyToUser.setText(localeMessageService.getMessage("reply.parse.askOption"));
-                replyToUser.setReplyMarkup(getInlineButtons(botStatus, tmpParsedItem));
+                replyToUser.setReplyMarkup(getInlineOptionButtons(botStatus, tmpParsedItem));
             }
-        } // show results and save to favorite
-        else if (botStatus.equals(BotStatus.SHOW_PARSE_END)){
-            StringBuilder result = new StringBuilder();
-            if (tmpParsedItem.getTempItemOptions().getGroup() == null) {
-                String size = tmpParsedItem.getTempItemOptions().getSize();
-                String color = tmpParsedItem.getTempItemOptions().getColor();
-                result.append(String.format(localeMessageService.getMessage("reply.parse.end"), tmpParsedItem.getTitle(), size + ", " + color));
-            } else {
-                String group = tmpParsedItem.getTempItemOptions().getGroup();
-                result.append(String.format(localeMessageService.getMessage("reply.parse.end"), tmpParsedItem.getTitle(), group));
-            }
+        } else if (botStatus.equals(BotStatus.ASK_TRACKING)) {
+            replyToUser.setText(String.format(localeMessageService.getMessage("reply.parse.askAddToFavorite"), getItemNameWithOptions(tmpParsedItem)));
+            replyToUser.setReplyMarkup(getInlineTrackingAnswerButtons());
             replyToUser.enableHtml(true);
-            replyToUser.setText(result.toString());
+        }
+        // show results and save to favorite
+        else if (botStatus.equals(BotStatus.SHOW_PARSE_END)) {
+            String result = String.format(localeMessageService.getMessage("reply.parse.end"), getItemNameWithOptions(tmpParsedItem));
+            replyToUser = parseMenuService.getParseMenu(chatId, userMsg);
+            replyToUser.enableHtml(true);
+            replyToUser.setText(result);
 
             tmpParsedItem.setTempItemOptions(null);
+            userProfile.setBotStatus(BotStatus.SHOW_MENU);
             userProfile.setTmpParsedItem(tmpParsedItem);
             userRepository.saveUserProfile(userId, userProfile);
 
 
-            System.out.println(" >>> need to handle the result");
-            // add to favorite etc.
+            System.out.println(" >>> need to store the result to favorite");
         }
         return replyToUser;
+    }
+
+    private String getItemNameWithOptions(Item tmpParsedItem) {
+        String title = tmpParsedItem.getTitle();
+        StringBuilder result = new StringBuilder(title);
+        if (tmpParsedItem.getTempItemOptions().getGroup() != null) {
+            String group = tmpParsedItem.getTempItemOptions().getGroup();
+            result.append(", ").append(group);
+        } else if (tmpParsedItem.getTempItemOptions().getColor() != null) {
+            String color = tmpParsedItem.getTempItemOptions().getColor();
+            String size = tmpParsedItem.getTempItemOptions().getSize();
+            result.append(", ").append(color).append(", ").append(size);
+        }
+        return result.toString();
     }
 
     @Override
@@ -160,8 +175,30 @@ public class ParseMessageHandler implements InputMessageHandler {
         return sb.append("\n").toString();
     }
 
-    private InlineKeyboardMarkup getInlineButtons(BotStatus botStatus, Item tmpParsedItem) {
+    private InlineKeyboardMarkup getInlineTrackingAnswerButtons() {
+        InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
 
+        String textYes = localeMessageService.getMessage("reply.answer.yes");
+        String textNo = localeMessageService.getMessage("reply.answer.no");
+        InlineKeyboardButton buttonYes = new InlineKeyboardButton(textYes);
+        InlineKeyboardButton buttonNo = new InlineKeyboardButton(textNo);
+        buttonYes.setCallbackData(textYes);
+        buttonNo.setCallbackData(textNo);
+
+        List<InlineKeyboardButton> buttonsList = new ArrayList<>();
+        buttonsList.add(buttonYes);
+        buttonsList.add(buttonNo);
+
+        List<List<InlineKeyboardButton>> rowList = new ArrayList<>();
+        rowList.add(buttonsList);
+
+        inlineKeyboardMarkup.setKeyboard(rowList);
+
+        return inlineKeyboardMarkup;
+    }
+
+
+    private InlineKeyboardMarkup getInlineOptionButtons(BotStatus botStatus, Item tmpParsedItem) {
         List<ItemOptions> optionsList = tmpParsedItem.getItemOptionsList();
 
         Set<String> set = new LinkedHashSet<>();

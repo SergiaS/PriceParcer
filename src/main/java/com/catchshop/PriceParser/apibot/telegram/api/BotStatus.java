@@ -15,6 +15,7 @@ public enum BotStatus {
     ASK_COLOR,
     ASK_SIZE,
     ASK_GROUP,
+    ASK_TRACKING,
 
     SHOW_HELP
 }

@@ -47,6 +47,7 @@ public class BotStatusContext {
             case ASK_COLOR:
             case ASK_SIZE:
             case ASK_GROUP:
+            case ASK_TRACKING:
                 return true;
             default:
                 return false;

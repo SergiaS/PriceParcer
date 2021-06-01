@@ -47,7 +47,7 @@ public class TelegramStart {
             processCallbackQueryFillingFavoriteItem(update);
         }
 
-        SendMessage replyMessage = null;
+        BotApiMethod<?> replyMessage = null;
         Message message = update.getMessage();
         if (message != null && message.hasText()) {
             log.info("New message from User: {}, chatId: {}, with text: {}",
@@ -57,8 +57,12 @@ public class TelegramStart {
         return replyMessage;
     }
 
-    // обработка при нажатии кнопки
-    private Update processCallbackQueryFillingFavoriteItem(Update update) {
+    /**
+     * Button click (callback) handler
+     * @param update
+     * For now it just change Update object without return.
+     */
+    private void processCallbackQueryFillingFavoriteItem(Update update) {
         CallbackQuery buttonQuery = update.getCallbackQuery();
 //        final String userChoice = buttonQuery.getMessage().getText();
 //        final Long chatId = buttonQuery.getMessage().getChatId();
@@ -77,52 +81,58 @@ public class TelegramStart {
         message.setText(buttonQueryData);
         if (botStatus.equals(BotStatus.ASK_COLOR)) {
             tmpParsedItem.getTempItemOptions().setColor(buttonQueryData);
-//            message.setText(buttonQueryData);
         } else if (botStatus.equals(BotStatus.ASK_SIZE)) {
             tmpParsedItem.getTempItemOptions().setSize(buttonQueryData);
-//            message.setText("You choose '" + tmpParsedItem.getTempItemOptions().getColor() + ", " + buttonQueryData + "' options to tracking");
         } else if (botStatus.equals(BotStatus.ASK_GROUP)) {
             tmpParsedItem.getTempItemOptions().setGroup(buttonQueryData);
-//            message.setText("You choose " + buttonQueryData + " option");
         }
         userProfile.setTmpParsedItem(tmpParsedItem);
         userRepository.saveUserProfile(userId, userProfile);
 
         update.setMessage(message);
-        return update;
     }
 
-    // обработка при отправке сообщения
-    private SendMessage handleInputMessage(Message message) {
+    // input message handler
+    private BotApiMethod<?> handleInputMessage(Message message) {
         String inputMessage = message.getText();
         Long userId = message.getFrom().getId();
-        BotStatus botStatus = null;
+        BotStatus botStatus;
+        BotStatus userRepositoryBotStatus = userRepository.getBotStatus(userId);
 
-        if (userRepository.getBotStatus(userId) == null || inputMessage.equals(localeMessageService.getMessage("button.menu.showMenu"))) {
+        if (userRepositoryBotStatus == null || inputMessage.equals(localeMessageService.getMessage("button.menu.showMenu"))) {
             botStatus = BotStatus.SHOW_MENU;
-        } else if (userRepository.getBotStatus(userId) == BotStatus.SHOW_SEARCH || inputMessage.equals(localeMessageService.getMessage("button.menu.showSearch"))) {
+        } else if (userRepositoryBotStatus == BotStatus.SHOW_SEARCH || inputMessage.equals(localeMessageService.getMessage("button.menu.showSearch"))) {
             botStatus = BotStatus.SHOW_SEARCH;
-        } else if (userRepository.getBotStatus(userId) == BotStatus.SHOW_PARSE || inputMessage.equals(localeMessageService.getMessage("button.menu.showParse"))) {
+        } else if (userRepositoryBotStatus == BotStatus.SHOW_PARSE || inputMessage.equals(localeMessageService.getMessage("button.menu.showParse"))) {
             botStatus = BotStatus.SHOW_PARSE;
-        } else if (userRepository.getBotStatus(userId) == BotStatus.ASK_COLOR) {
+        } else if (userRepositoryBotStatus == BotStatus.ASK_COLOR) {
             if (userRepository.getUserProfile(userId).getTmpParsedItem().getItemOptionsList().stream().anyMatch(color -> color.getColor().equals(inputMessage))) {
                 botStatus = BotStatus.ASK_SIZE;
             } else {
                 telegramBot.sendMessage(new SendMessage(userId.toString(), localeMessageService.getMessage("reply.parse.wrongOption")));
                 makeSomePause(1000);
-                botStatus = userRepository.getBotStatus(userId);
+                botStatus = userRepositoryBotStatus;
             }
-        } else if (userRepository.getBotStatus(userId) == BotStatus.ASK_SIZE) {
+        } else if (userRepositoryBotStatus == BotStatus.ASK_SIZE) {
             if (userRepository.getUserProfile(userId).getTmpParsedItem().getItemOptionsList().stream().anyMatch(size -> size.getSize().equals(inputMessage))) {
-                botStatus = BotStatus.SHOW_PARSE_END;
+                botStatus = BotStatus.ASK_TRACKING;
             } else {
                 telegramBot.sendMessage(new SendMessage(userId.toString(), localeMessageService.getMessage("reply.parse.wrongOption")));
                 makeSomePause(1000);
-                botStatus = userRepository.getBotStatus(userId);
+                botStatus = userRepositoryBotStatus;
             }
-        } else if (userRepository.getBotStatus(userId) == BotStatus.ASK_GROUP) {
-            botStatus = BotStatus.SHOW_PARSE_END;
-        } else if (userRepository.getBotStatus(userId) == BotStatus.SHOW_PARSE_END) {
+        } else if (userRepositoryBotStatus == BotStatus.ASK_TRACKING) {
+            if (inputMessage.equals(localeMessageService.getMessage("reply.answer.yes"))) {
+                botStatus = BotStatus.SHOW_PARSE_END;
+            } else if (inputMessage.equals(localeMessageService.getMessage("reply.answer.no"))) {
+                botStatus = BotStatus.SHOW_MENU;
+            } else {
+                telegramBot.sendMessage(new SendMessage(userId.toString(), localeMessageService.getMessage("reply.parse.wrongOption")));
+                botStatus = BotStatus.ASK_TRACKING;
+            }
+        } else if (userRepositoryBotStatus == BotStatus.ASK_GROUP) {
+            botStatus = BotStatus.ASK_TRACKING;
+        } else if (userRepositoryBotStatus == BotStatus.SHOW_PARSE_END) {
             botStatus = BotStatus.SHOW_PARSE;
         } else if (inputMessage.equals(localeMessageService.getMessage("button.menu.showFavorites"))) {
             botStatus = BotStatus.SHOW_FAVORITE;
@@ -159,7 +169,7 @@ public class TelegramStart {
         return answerCallbackQuery;
     }
 
-    private void makeSomePause(int timeInMs) {
+    private void makeSomePause(final int timeInMs) {
         try {
             Thread.sleep(timeInMs);
         } catch (InterruptedException e) {
