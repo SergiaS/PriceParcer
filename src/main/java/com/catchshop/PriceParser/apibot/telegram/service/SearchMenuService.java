@@ -1,8 +1,6 @@
 package com.catchshop.PriceParser.apibot.telegram.service;
 
-import com.catchshop.PriceParser.apibot.telegram.PriceParserTelegramBot;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
@@ -16,12 +14,10 @@ import java.util.List;
 public class SearchMenuService {
 
     private final LocaleMessageService localeMessageService;
-    private final PriceParserTelegramBot telegramBot;
 
     @Autowired
-    public SearchMenuService(LocaleMessageService localeMessageService, @Lazy PriceParserTelegramBot telegramBot) {
+    public SearchMenuService(LocaleMessageService localeMessageService) {
         this.localeMessageService = localeMessageService;
-        this.telegramBot = telegramBot;
     }
 
     public SendMessage getSearchMenuMessage(String chatId, String userMsg) {

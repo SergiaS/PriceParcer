@@ -58,12 +58,16 @@ public class ParseMessageHandler implements InputMessageHandler {
         Long userId = inputMessage.getFrom().getId();
 
         BotStatus botStatus = userRepository.getUserProfile(userId).getBotStatus();
+        UserProfile userProfile = userRepository.getUserProfile(userId);
 
-        SendMessage replyToUser = parseMenuService.getParseMenu(chatId, userMsg);
+        SendMessage replyToUser = new SendMessage();
+        replyToUser.setChatId(chatId);
         replyToUser.disableWebPagePreview();
+        replyToUser.enableHtml(true);
 
         if (botStatus.equals(BotStatus.SHOW_PARSE)) {
             if (userMsg.equals(localeMessageService.getMessage("button.menu.showParse"))) {
+                replyToUser.setReplyMarkup(parseMenuService.getParseMenuKeyboard(chatId));
                 replyToUser.setText(String.format(localeMessageService.getMessage("reply.menu.showParse"), showListOfShops()));
             } else if (isBikeShopUrl(userMsg)) {
                 telegramBot.sendMessage(replyMessageService.getReplyMessage(chatId, "reply.parse.start"));
@@ -78,12 +82,10 @@ public class ParseMessageHandler implements InputMessageHandler {
                 }
 
                 if (parseItemInfo == null) {
-                    replyToUser = replyMessageService.getReplyMessage(chatId, "reply.notFound");
+                    replyToUser.setText(localeMessageService.getMessage("reply.notFound"));
+                    botStatus = BotStatus.SHOW_PARSE_END;
                 } else {
                     formattedResult.showItemFormattedResults(chatId, parseItemInfo);
-
-                    UserProfile userProfile = userRepository.getUserProfile(userId);
-                    userProfile.setTmpParsedItem(parseItemInfo);
 
                     ItemOptions itemOptions = parseItemInfo.getItemOptionsList().get(0);
                     if (itemOptions.getGroup() != null) {
@@ -93,44 +95,41 @@ public class ParseMessageHandler implements InputMessageHandler {
                     } else {
                         botStatus = BotStatus.ASK_TRACKING;
                     }
-                    userProfile.setBotStatus(botStatus);
-                    userRepository.saveUserProfile(Long.valueOf(chatId), userProfile);
+                    userProfile.setTmpParsedItem(parseItemInfo);
                 }
+                userProfile.setBotStatus(botStatus);
+                userRepository.saveUserProfile(userId, userProfile);
             } else {
                 replyToUser.setText(localeMessageService.getMessage("reply.parse.error"));
             }
         }
 
-        UserProfile userProfile = userRepository.getUserProfile(userId);
         Item tmpParsedItem = userProfile.getTmpParsedItem();
         if (isFillingItem(botStatus)) {
             if (tmpParsedItem.getItemOptionsList().get(0).getGroup() == null) {
                 if (botStatus.equals(BotStatus.ASK_COLOR)) {
                     replyToUser.setText(localeMessageService.getMessage("reply.parse.askColor"));
-                    replyToUser.setReplyMarkup(getInlineOptionButtons(botStatus, tmpParsedItem));
                 } else if (botStatus.equals(BotStatus.ASK_SIZE)) {
                     replyToUser.setText(localeMessageService.getMessage("reply.parse.askSize"));
-                    replyToUser.setReplyMarkup(getInlineOptionButtons(botStatus, tmpParsedItem));
                 }
             } else /* if (botStatus.equals(BotStatus.ASK_GROUP)) */ {
                 replyToUser.setText(localeMessageService.getMessage("reply.parse.askOption"));
-                replyToUser.setReplyMarkup(getInlineOptionButtons(botStatus, tmpParsedItem));
             }
+            replyToUser.setReplyMarkup(getInlineOptionButtons(botStatus, tmpParsedItem));
         } else if (botStatus.equals(BotStatus.ASK_TRACKING)) {
             replyToUser.setText(String.format(localeMessageService.getMessage("reply.parse.askAddToFavorite"), getItemNameWithOptions(tmpParsedItem)));
             replyToUser.setReplyMarkup(getInlineTrackingAnswerButtons());
-            replyToUser.enableHtml(true);
         }
         // show results and save to favorite
         else if (botStatus.equals(BotStatus.SHOW_PARSE_END)) {
-            String result = String.format(localeMessageService.getMessage("reply.parse.end"), getItemNameWithOptions(tmpParsedItem));
-            replyToUser = parseMenuService.getParseMenu(chatId, userMsg);
-            replyToUser.enableHtml(true);
-            replyToUser.setText(result);
-
-            tmpParsedItem.setTempItemOptions(null);
+            if (tmpParsedItem != null) {
+                String result = String.format(localeMessageService.getMessage("reply.parse.end"), getItemNameWithOptions(tmpParsedItem));
+                replyToUser.setReplyMarkup(parseMenuService.getParseMenuKeyboard(chatId));
+                replyToUser.setText(result);
+                tmpParsedItem.setTempItemOptions(null);
+                userProfile.setTmpParsedItem(tmpParsedItem);
+            }
             userProfile.setBotStatus(BotStatus.SHOW_MENU);
-            userProfile.setTmpParsedItem(tmpParsedItem);
             userRepository.saveUserProfile(userId, userProfile);
 
 
@@ -196,7 +195,6 @@ public class ParseMessageHandler implements InputMessageHandler {
 
         return inlineKeyboardMarkup;
     }
-
 
     private InlineKeyboardMarkup getInlineOptionButtons(BotStatus botStatus, Item tmpParsedItem) {
         List<ItemOptions> optionsList = tmpParsedItem.getItemOptionsList();

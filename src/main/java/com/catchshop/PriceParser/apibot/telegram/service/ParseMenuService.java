@@ -29,13 +29,13 @@ public class ParseMenuService {
     }
 
     public SendMessage getParseMenu(String chatId, String userMsg) {
-        ReplyKeyboardMarkup replyKeyboardMarkup = getParseMenuKeyboard(Long.valueOf(chatId));
+        ReplyKeyboardMarkup replyKeyboardMarkup = getParseMenuKeyboard(chatId);
         return createMessageWithKeyboard(chatId, userMsg, replyKeyboardMarkup);
     }
 
-    private ReplyKeyboardMarkup getParseMenuKeyboard(Long chatId) {
+    public ReplyKeyboardMarkup getParseMenuKeyboard(String chatId) {
         List<KeyboardRow> keyboard = new ArrayList<>();
-        if (userRepository.getBotStatus(chatId).equals(BotStatus.SHOW_PARSE_END)){
+        if (userRepository.getBotStatus(Long.valueOf(chatId)).equals(BotStatus.SHOW_PARSE_END)){
             keyboard.add(addKeyboardRowByMessage("button.menu.showParse"));
             keyboard.add(addKeyboardRowByMessage("button.menu.showFavorites"));
         }

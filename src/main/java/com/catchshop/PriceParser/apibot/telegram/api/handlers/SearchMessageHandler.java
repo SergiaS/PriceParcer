@@ -8,6 +8,7 @@ import com.catchshop.PriceParser.apibot.telegram.service.LocaleMessageService;
 import com.catchshop.PriceParser.apibot.telegram.service.ReplyMessageService;
 import com.catchshop.PriceParser.apibot.telegram.service.SearchMenuService;
 import com.catchshop.PriceParser.apibot.telegram.util.FormattedResult;
+import com.catchshop.PriceParser.bike.enums.ParsedShop;
 import com.catchshop.PriceParser.bike.model.Item;
 import com.catchshop.PriceParser.bike.shops.bike24.Bike24Parser;
 import com.catchshop.PriceParser.bike.shops.wiggle.WiggleParser;
@@ -58,13 +59,17 @@ public class SearchMessageHandler implements InputMessageHandler {
 
             WiggleParser wp = new WiggleParser();
             List<Item> wiggleItemsList = wp.wiggleSearcher(userText);
-            messageIfNotFound(chatId, wiggleItemsList);
+            messageIfNotFound(chatId, wiggleItemsList, ParsedShop.WIGGLE.name());
 
             Bike24Parser b24p = new Bike24Parser();
             List<Item> bike24ItemsList = b24p.bike24Searcher(userText);
-            messageIfNotFound(chatId, bike24ItemsList);
+            messageIfNotFound(chatId, bike24ItemsList, ParsedShop.BIKE24.name());
 
-            replyToUser.setText(localeMessageService.getMessage("reply.search.end"));
+            if (!wiggleItemsList.isEmpty() || !bike24ItemsList.isEmpty()) {
+                replyToUser.setText(localeMessageService.getMessage("reply.search.goodEnd"));
+            } else {
+                replyToUser.setText(localeMessageService.getMessage("reply.search.badEnd"));
+            }
         }
         return replyToUser;
     }
@@ -74,12 +79,11 @@ public class SearchMessageHandler implements InputMessageHandler {
         return BotStatus.SHOW_SEARCH;
     }
 
-    private void messageIfNotFound(String chatId, List<Item> items) {
+    private void messageIfNotFound(String chatId, List<Item> items, String shopName) {
         if (items.size() == 0) {
-            telegramBot.sendMessage(new SendMessage(chatId, localeMessageService.getMessage("reply.notFound")));
+            telegramBot.sendMessage(new SendMessage(chatId, String.format(localeMessageService.getMessage("reply.notFound"), shopName)));
         } else {
-            telegramBot.sendMessage(new SendMessage(
-                    chatId, String.format(localeMessageService.getMessage("reply.search.results"), items.get(0).getShop().getName())));
+            telegramBot.sendMessage(new SendMessage(chatId, String.format(localeMessageService.getMessage("reply.search.results"), shopName)));
             formattedResult.showShopsFormattedResults(chatId, items);
         }
     }

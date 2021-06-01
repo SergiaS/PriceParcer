@@ -15,7 +15,7 @@ import java.util.List;
 @Slf4j
 public class FormattedResult {
 
-    private PriceParserTelegramBot telegramBot;
+    private final PriceParserTelegramBot telegramBot;
 
     @Autowired
     public FormattedResult(@Lazy PriceParserTelegramBot telegramBot) {
@@ -29,20 +29,8 @@ public class FormattedResult {
         result.append("<u>").append("<a href=\"").append(item.getURL()).append("\">").append(item.getTitle())
                 .append("</a> [").append(item.getRangePrice()).append("]</u>").append("\n");
 
-        for (ItemOptions options : item.getItemOptionsList()) {
-            result.append("<b>").append(item.getShop().getChosenCurrency()).append(options.getPrice()).append("</b>");
-            if (options.getColor() == null) {
-                result
-                    .append(options.getGroup() == null ? "" : ", " + options.getGroup())
-                    .append(options.getStatus() == null ? "" : ", " + options.getStatus());
-            } else {
-                result
-                    .append(options.getColor() == null ? "" : ", " + options.getColor())
-                    .append(options.getSize() == null ? "" : ", " + options.getSize())
-                    .append(options.getStatus() == null ? "" : ", " + options.getStatus());
-            }
-            result.append("\n");
-        }
+        addOptions(item, result);
+
         sendResultToTelegram(chatId, result.toString());
     }
 
@@ -59,20 +47,8 @@ public class FormattedResult {
                         .append("</a> [").append(item.getRangePrice()).append("]</u>").append("\n");
                 count++;
 
-                for (ItemOptions options : item.getItemOptionsList()) {
-                    result.append("<b>").append(item.getShop().getChosenCurrency()).append(options.getPrice()).append("</b>");
-                    if (options.getColor() == null) {
-                        result
-                            .append(options.getGroup() == null ? "" : ", " + options.getGroup())
-                            .append(options.getStatus() == null ? "" : ", " + options.getStatus());
-                    } else {
-                        result
-                            .append(options.getColor() == null ? "" : ", " + options.getColor())
-                            .append(options.getSize() == null ? "" : ", " + options.getSize())
-                            .append(options.getStatus() == null ? "" : ", " + options.getStatus());
-                    }
-                    result.append("\n");
-                }
+                addOptions(item, result);
+
                 if (result.length() > 3000) {
                     sendResultToTelegram(chatId, result.toString());
                     result.setLength(0);
@@ -80,6 +56,23 @@ public class FormattedResult {
             }
         }
         sendResultToTelegram(chatId, result.toString());
+    }
+
+    private void addOptions(Item item, StringBuilder result) {
+        for (ItemOptions options : item.getItemOptionsList()) {
+            result.append("<b>").append(item.getShop().getChosenCurrency()).append(options.getPrice()).append("</b>");
+            if (options.getColor() == null) {
+                result
+                        .append(options.getGroup() == null ? "" : ", " + options.getGroup())
+                        .append(options.getStatus() == null ? "" : ", " + options.getStatus());
+            } else {
+                result
+                        .append(options.getColor() == null ? "" : ", " + options.getColor())
+                        .append(options.getSize() == null ? "" : ", " + options.getSize())
+                        .append(options.getStatus() == null ? "" : ", " + options.getStatus());
+            }
+            result.append("\n");
+        }
     }
 
     private void sendResultToTelegram(String chatId, String result) {
