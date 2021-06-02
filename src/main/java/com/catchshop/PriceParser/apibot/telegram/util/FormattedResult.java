@@ -1,7 +1,7 @@
 package com.catchshop.PriceParser.apibot.telegram.util;
 
 import com.catchshop.PriceParser.apibot.telegram.PriceParserTelegramBot;
-import com.catchshop.PriceParser.bike.model.Item;
+import com.catchshop.PriceParser.apibot.telegram.model.ParseItem;
 import com.catchshop.PriceParser.bike.model.ItemOptions;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,32 +22,32 @@ public class FormattedResult {
         this.telegramBot = telegramBot;
     }
 
-    public void showItemFormattedResults(String chatId, Item item) {
-        log.info("Item results: {}", item);
+    public void showItemFormattedResults(String chatId, ParseItem parseItem) {
+        log.info("Item results: {}", parseItem);
 
         StringBuilder result = new StringBuilder();
-        result.append("<u>").append("<a href=\"").append(item.getURL()).append("\">").append(item.getTitle())
-                .append("</a> [").append(item.getRangePrice()).append("]</u>").append("\n");
+        result.append("<u>").append("<a href=\"").append(parseItem.getUrl()).append("\">").append(parseItem.getTitle())
+                .append("</a> [").append(parseItem.getRangePrice()).append("]</u>").append("\n");
 
-        addOptions(item, result);
+        addOptions(parseItem, result);
 
         sendResultToTelegram(chatId, result.toString());
     }
 
-    public void showShopsFormattedResults(String chatId, List<Item> itemList) {
-        log.info("Format {} shop results, Total № of items: {}", itemList.get(0).getShop(), itemList.size());
+    public void showShopsFormattedResults(String chatId, List<ParseItem> parseItemList) {
+        log.info("Format {} shop results, Total № of items: {}", parseItemList.get(0).getShop(), parseItemList.size());
 
         int count = 1;
         StringBuilder result = new StringBuilder();
-        for (Item item : itemList) {
-            if (item == null) {
-                log.error("There is an error with item={}", item);
+        for (ParseItem parseItem : parseItemList) {
+            if (parseItem == null) {
+                log.error("There is an error with item={}", parseItem);
             } else {
-                result.append("<u>").append(count).append(" <a href=\"").append(item.getURL()).append("\">").append(item.getTitle())
-                        .append("</a> [").append(item.getRangePrice()).append("]</u>").append("\n");
+                result.append("<u>").append(count).append(" <a href=\"").append(parseItem.getUrl()).append("\">").append(parseItem.getTitle())
+                        .append("</a> [").append(parseItem.getRangePrice()).append("]</u>").append("\n");
                 count++;
 
-                addOptions(item, result);
+                addOptions(parseItem, result);
 
                 if (result.length() > 3000) {
                     sendResultToTelegram(chatId, result.toString());
@@ -58,9 +58,9 @@ public class FormattedResult {
         sendResultToTelegram(chatId, result.toString());
     }
 
-    private void addOptions(Item item, StringBuilder result) {
-        for (ItemOptions options : item.getItemOptionsList()) {
-            result.append("<b>").append(item.getShop().getChosenCurrency()).append(options.getPrice()).append("</b>");
+    private void addOptions(ParseItem parseItem, StringBuilder result) {
+        for (ItemOptions options : parseItem.getItemOptionsList()) {
+            result.append("<b>").append(parseItem.getShop().getChosenCurrency()).append(options.getPrice()).append("</b>");
             if (options.getColor() == null) {
                 result
                         .append(options.getGroup() == null ? "" : ", " + options.getGroup())

@@ -1,15 +1,14 @@
 package com.catchshop.PriceParser.apibot.telegram.model;
 
 import com.catchshop.PriceParser.apibot.telegram.api.BotStatus;
-import com.catchshop.PriceParser.bike.model.Item;
 
 import java.util.HashSet;
 import java.util.Set;
 
 public class UserProfile {
 
-    private Item tmpParsedItem;
-    private Set<Item> favorites;
+    private ParseItem tmpParsedParseItem;
+    private Set<FavoriteItem> favorites;
     private BotStatus botStatus;
     private String languageTag;
     // and more shop settings ...
@@ -20,19 +19,19 @@ public class UserProfile {
         this.languageTag = "en-EN";
     }
 
-    public Item getTmpParsedItem() {
-        return tmpParsedItem;
+    public ParseItem getTmpParsedItem() {
+        return tmpParsedParseItem;
     }
 
-    public void setTmpParsedItem(Item tmpParsedItem) {
-        this.tmpParsedItem = tmpParsedItem;
+    public void setTmpParsedItem(ParseItem tmpParsedParseItem) {
+        this.tmpParsedParseItem = tmpParsedParseItem;
     }
 
-    public Set<Item> getFavorites() {
+    public Set<FavoriteItem> getFavorites() {
         return favorites;
     }
 
-    public void setFavorites(Set<Item> favorites) {
+    public void setFavorites(Set<FavoriteItem> favorites) {
         this.favorites = favorites;
     }
 

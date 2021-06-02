@@ -1,7 +1,7 @@
 package com.catchshop.PriceParser.bike.shops.bike24;
 
 import com.catchshop.PriceParser.bike.enums.ParsedShop;
-import com.catchshop.PriceParser.bike.model.Item;
+import com.catchshop.PriceParser.apibot.telegram.model.ParseItem;
 import com.catchshop.PriceParser.bike.model.ItemOptions;
 import com.catchshop.PriceParser.bike.model.Shop;
 import com.catchshop.PriceParser.bike.util.ShopHelper;
@@ -16,7 +16,6 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Can parse first 30 positions (first page) and specific position by url of Bike24.
@@ -36,10 +35,10 @@ public class Bike24Parser {
         ShopHelper.printItem(b24.parseItemInfo("https://www.bike24.com/p2382639.html"));
     }
 
-    public List<Item> bike24Searcher(String textToSearch) {
+    public List<ParseItem> bike24Searcher(String textToSearch) {
         String catalogUrl = SITE + SEARCH + textToSearch + SORT_BY;
 
-        List<Item> itemsList = new ArrayList<>();
+        List<ParseItem> itemsList = new ArrayList<>();
         ShopHelper.allowAllCertificates(); // very important!
         try {
             Document doc = Jsoup.connect(catalogUrl)
@@ -62,10 +61,10 @@ public class Bike24Parser {
         return itemsList;
     }
 
-    public Item parseItemInfo(String itemUrl) {
+    public ParseItem parseItemInfo(String itemUrl) {
         ShopHelper.allowAllCertificates(); // very important!
 
-        Item item = null;
+        ParseItem parseItem = null;
         try {
             Document doc = Jsoup.connect(itemUrl).get();
 
@@ -81,12 +80,12 @@ public class Bike24Parser {
 
             List<ItemOptions> itemOptionsList = parseItemOptions(doc);
 
-            item = new Item(name, bike24Shop, itemUrl, itemOptionsList, rangePrice);
-            item.setTempItemOptions(new ItemOptions(null, BigDecimal.ZERO, null));
+            parseItem = new ParseItem(name, bike24Shop, itemUrl, itemOptionsList, rangePrice);
+            parseItem.setOptions(new ItemOptions(null, BigDecimal.ZERO, null));
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return item;
+        return parseItem;
     }
 
 

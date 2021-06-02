@@ -1,8 +1,9 @@
 package com.catchshop.PriceParser.apibot.telegram.repository;
 
 import com.catchshop.PriceParser.apibot.telegram.api.BotStatus;
+import com.catchshop.PriceParser.apibot.telegram.model.FavoriteItem;
 import com.catchshop.PriceParser.apibot.telegram.model.UserProfile;
-import com.catchshop.PriceParser.bike.model.Item;
+import com.catchshop.PriceParser.apibot.telegram.model.ParseItem;
 import org.springframework.stereotype.Repository;
 
 import java.util.HashMap;
@@ -62,30 +63,30 @@ public class UserRepository implements MainRepository {
 
 
     @Override
-    public Set<Item> getAllItems(Long userId) {
+    public Set<FavoriteItem> getAllItems(Long userId) {
         UserProfile userProfile = userProfilesDB.get(userId);
         return userProfile.getFavorites();
     }
 
     @Override
-    public Item getItem(Long userId, Item item) {
-        Set<Item> favorites = userProfilesDB.get(userId).getFavorites();
-        if (favorites.contains(item)) {
-            return item;
+    public ParseItem getItem(Long userId, ParseItem parseItem) {
+        Set<FavoriteItem> favorites = userProfilesDB.get(userId).getFavorites();
+        if (favorites.contains(parseItem)) {
+            return parseItem;
         }
         return null;
     }
 
     @Override
-    public void saveItem(Long userId, Item item) {
+    public void saveItem(Long userId, FavoriteItem parseItem) {
         userProfilesDB.get(userId)
-                .getFavorites().add(item);
+                .getFavorites().add(parseItem);
     }
 
     @Override
-    public void deleteItem(Long userId, Item item) {
+    public void deleteItem(Long userId, ParseItem parseItem) {
         UserProfile userProfile = userProfilesDB.get(userId);
-        Set<Item> favorites = userProfile.getFavorites();
-        favorites.remove(item);
+        Set<FavoriteItem> favorites = userProfile.getFavorites();
+        favorites.remove(parseItem);
     }
 }

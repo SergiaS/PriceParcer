@@ -1,7 +1,7 @@
 package com.catchshop.PriceParser.bike.shops.wiggle;
 
 import com.catchshop.PriceParser.bike.enums.ParsedShop;
-import com.catchshop.PriceParser.bike.model.Item;
+import com.catchshop.PriceParser.apibot.telegram.model.ParseItem;
 import com.catchshop.PriceParser.bike.model.ItemOptions;
 import com.catchshop.PriceParser.bike.model.Shop;
 import com.catchshop.PriceParser.bike.util.ShopHelper;
@@ -40,7 +40,7 @@ public class WiggleParser {
 //        ShopHelper.printItem(wp.parseItemInfo("https://www.wiggle.co.uk/castelli-arenberg-gel-2-cycling-gloves"), CURRENCY_SIGN);
     }
 
-    public List<Item> wiggleSearcher(String textToSearch) {
+    public List<ParseItem> wiggleSearcher(String textToSearch) {
         String catalogItemsUrl = SITE +
                 textToSearch.replace(" ", "+") +
                 SORT_BY +
@@ -48,7 +48,7 @@ public class WiggleParser {
                 "&" + CURRENCY +
                 COUNTRY;
 
-        List<Item> itemsList = new ArrayList<>();
+        List<ParseItem> itemsList = new ArrayList<>();
         try {
             Document doc = Jsoup.connect(catalogItemsUrl)
                     .ignoreHttpErrors(true)
@@ -71,8 +71,8 @@ public class WiggleParser {
         return itemsList;
     }
 
-    public Item parseItemInfo(String itemUrl) {
-        Item item = null;
+    public ParseItem parseItemInfo(String itemUrl) {
+        ParseItem parseItem = null;
         try {
             Document doc = Jsoup.connect(itemUrl + "?" + CURRENCY + COUNTRY).get();
 
@@ -81,12 +81,12 @@ public class WiggleParser {
 
             List<ItemOptions> itemOptions = parseItemOptions(doc);
 
-            item = new Item(name, wiggleShop, itemUrl, itemOptions, rangePrice);
-            item.setTempItemOptions(new ItemOptions(null, null, BigDecimal.ZERO, null));
+            parseItem = new ParseItem(name, wiggleShop, itemUrl, itemOptions, rangePrice);
+            parseItem.setOptions(new ItemOptions(null, null, BigDecimal.ZERO, null));
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return item;
+        return parseItem;
     }
 
     private List<ItemOptions> parseItemOptions(Document doc) {

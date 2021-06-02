@@ -8,7 +8,7 @@ import com.catchshop.PriceParser.apibot.telegram.service.MenuKeyboardService;
 import com.catchshop.PriceParser.apibot.telegram.service.ReplyMessageService;
 import com.catchshop.PriceParser.apibot.telegram.util.FormattedResult;
 import com.catchshop.PriceParser.bike.enums.ParsedShop;
-import com.catchshop.PriceParser.bike.model.Item;
+import com.catchshop.PriceParser.apibot.telegram.model.ParseItem;
 import com.catchshop.PriceParser.bike.shops.bike24.Bike24Parser;
 import com.catchshop.PriceParser.bike.shops.wiggle.WiggleParser;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,11 +50,11 @@ public class SearchMessageHandler implements InputMessageHandler {
             telegramBot.sendMessage(replyMessageService.getReplyMessage(chatId, "reply.search.start"));
 
             WiggleParser wp = new WiggleParser();
-            List<Item> wiggleItemsList = wp.wiggleSearcher(userText);
+            List<ParseItem> wiggleItemsList = wp.wiggleSearcher(userText);
             messageIfNotFound(chatId, wiggleItemsList, ParsedShop.WIGGLE.name());
 
             Bike24Parser b24p = new Bike24Parser();
-            List<Item> bike24ItemsList = b24p.bike24Searcher(userText);
+            List<ParseItem> bike24ItemsList = b24p.bike24Searcher(userText);
             messageIfNotFound(chatId, bike24ItemsList, ParsedShop.BIKE24.name());
 
             if (!wiggleItemsList.isEmpty() || !bike24ItemsList.isEmpty()) {
@@ -71,12 +71,12 @@ public class SearchMessageHandler implements InputMessageHandler {
         return BotStatus.SHOW_SEARCH;
     }
 
-    private void messageIfNotFound(String chatId, List<Item> items, String shopName) {
-        if (items.size() == 0) {
+    private void messageIfNotFound(String chatId, List<ParseItem> parseItems, String shopName) {
+        if (parseItems.size() == 0) {
             telegramBot.sendMessage(new SendMessage(chatId, String.format(localeMessageService.getMessage("reply.notFound"), shopName)));
         } else {
             telegramBot.sendMessage(new SendMessage(chatId, String.format(localeMessageService.getMessage("reply.search.results"), shopName)));
-            formattedResult.showShopsFormattedResults(chatId, items);
+            formattedResult.showShopsFormattedResults(chatId, parseItems);
         }
     }
 }

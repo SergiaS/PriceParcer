@@ -1,6 +1,6 @@
 package com.catchshop.PriceParser.bike.util;
 
-import com.catchshop.PriceParser.bike.model.Item;
+import com.catchshop.PriceParser.apibot.telegram.model.ParseItem;
 import com.catchshop.PriceParser.bike.model.ItemOptions;
 
 import javax.net.ssl.*;
@@ -52,24 +52,24 @@ public class ShopHelper {
         }
     }
 
-    public static void printItem(final Item item) {
-        String title = item.getTitle();
-        String rangePrice = item.getRangePrice();
-        String url = item.getURL();
-        String currency = item.getShop().getChosenCurrency();
+    public static void printItem(final ParseItem parseItem) {
+        String title = parseItem.getTitle();
+        String rangePrice = parseItem.getRangePrice();
+        String url = parseItem.getUrl();
+        String currency = parseItem.getShop().getChosenCurrency();
 
         System.out.println("No." + (itemCount++) + " - " + title + " [" + rangePrice + "]");
         System.out.println("URL: " + url);
 
-        List<ItemOptions> shopOptionsList = item.getItemOptionsList();
+        List<ItemOptions> shopOptionsList = parseItem.getItemOptionsList();
         printShopOptions(shopOptionsList, currency);
     }
 
-    public static void printItems(List<Item> itemsList) {
+    public static void printItems(List<ParseItem> itemsList) {
         for (int i = 0; i < itemsList.size(); i++) {
             String title = itemsList.get(i).getTitle();
             String priceRange = itemsList.get(i).getRangePrice();
-            String url = itemsList.get(i).getURL();
+            String url = itemsList.get(i).getUrl();
             String currency = itemsList.get(i).getShop().getChosenCurrency();
 
             System.out.println("No." + (i + 1) + " - " + title + " [" + priceRange + "]");

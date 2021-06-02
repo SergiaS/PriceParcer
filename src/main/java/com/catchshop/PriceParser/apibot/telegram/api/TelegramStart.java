@@ -4,7 +4,7 @@ import com.catchshop.PriceParser.apibot.telegram.PriceParserTelegramBot;
 import com.catchshop.PriceParser.apibot.telegram.model.UserProfile;
 import com.catchshop.PriceParser.apibot.telegram.repository.UserRepository;
 import com.catchshop.PriceParser.apibot.telegram.service.LocaleMessageService;
-import com.catchshop.PriceParser.bike.model.Item;
+import com.catchshop.PriceParser.apibot.telegram.model.ParseItem;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -68,19 +68,19 @@ public class TelegramStart {
         String buttonQueryData = buttonQuery.getData();
 
         BotStatus botStatus = userProfile.getBotStatus();
-        Item tmpParsedItem = userProfile.getTmpParsedItem();
+        ParseItem tmpParsedParseItem = userProfile.getTmpParsedItem();
 
         Message message = buttonQuery.getMessage();
         message.setFrom(buttonQuery.getFrom());
         message.setText(buttonQueryData);
         if (botStatus.equals(BotStatus.ASK_COLOR)) {
-            tmpParsedItem.getTempItemOptions().setColor(buttonQueryData);
+            tmpParsedParseItem.getOptions().setColor(buttonQueryData);
         } else if (botStatus.equals(BotStatus.ASK_SIZE)) {
-            tmpParsedItem.getTempItemOptions().setSize(buttonQueryData);
+            tmpParsedParseItem.getOptions().setSize(buttonQueryData);
         } else if (botStatus.equals(BotStatus.ASK_GROUP)) {
-            tmpParsedItem.getTempItemOptions().setGroup(buttonQueryData);
+            tmpParsedParseItem.getOptions().setGroup(buttonQueryData);
         }
-        userProfile.setTmpParsedItem(tmpParsedItem);
+        userProfile.setTmpParsedItem(tmpParsedParseItem);
         userRepository.saveUserProfile(userId, userProfile);
 
         update.setMessage(message);
