@@ -12,8 +12,8 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 
 @Component
 public class FavoriteMessageHandler implements InputMessageHandler {
-    private UserRepository userRepository;
-    private ReplyMessageService messageService;
+    private final UserRepository userRepository;
+    private final ReplyMessageService messageService;
 
     @Autowired
     public FavoriteMessageHandler(UserRepository userRepository, ReplyMessageService messageService) {
@@ -22,12 +22,7 @@ public class FavoriteMessageHandler implements InputMessageHandler {
     }
 
     @Override
-    public SendMessage handle(Message message) {
-        return processUserInput(message);
-    }
-
-    private SendMessage processUserInput(Message inputMessage) {
-//        String userAnswer = inputMessage.getText();
+    public SendMessage handle(Message inputMessage) {
         Long userId = inputMessage.getFrom().getId();
         Long chatId = inputMessage.getChatId();
 

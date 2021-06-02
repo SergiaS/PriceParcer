@@ -21,21 +21,17 @@ public class MenuMessageHandler implements InputMessageHandler {
     }
 
     @Override
-    public SendMessage handle(Message message) {
-        return processUserInput(message);
-    }
-
-    @Override
-    public BotStatus getHandleName() {
-        return BotStatus.SHOW_MENU;
-    }
-
-    private SendMessage processUserInput(Message inputMessage) {
+    public SendMessage handle(Message inputMessage) {
         String chatId = inputMessage.getChatId().toString();
 
         SendMessage replyToUser;
         replyToUser = menuKeyboardService.getMenuMessage(chatId, localeMessageService.getMessage("reply.menu.showMenu"));
         return replyToUser;
+    }
+
+    @Override
+    public BotStatus getHandleName() {
+        return BotStatus.SHOW_MENU;
     }
 
 }

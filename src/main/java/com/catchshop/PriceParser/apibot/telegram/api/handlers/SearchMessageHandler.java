@@ -37,11 +37,7 @@ public class SearchMessageHandler implements InputMessageHandler {
     }
 
     @Override
-    public SendMessage handle(Message message) {
-        return processUserInput(message);
-    }
-
-    private SendMessage processUserInput(Message inputMessage) {
+    public SendMessage handle(Message inputMessage) {
         String userText = inputMessage.getText();
         String chatId = inputMessage.getChatId().toString();
 

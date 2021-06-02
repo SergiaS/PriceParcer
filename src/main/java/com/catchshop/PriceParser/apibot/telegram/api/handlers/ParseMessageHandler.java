@@ -51,23 +51,26 @@ public class ParseMessageHandler implements InputMessageHandler {
     }
 
     @Override
-    public SendMessage handle(Message message) {
-        return processUserInput(message);
-    }
-
-    private SendMessage processUserInput(Message inputMessage) {
+    public SendMessage handle(Message inputMessage) {
         String userMsg = inputMessage.getText();
         String chatId = inputMessage.getChatId().toString();
         Long userId = inputMessage.getFrom().getId();
-
-        BotStatus botStatus = userRepository.getUserProfile(userId).getBotStatus();
-        UserProfile userProfile = userRepository.getUserProfile(userId);
 
         SendMessage replyToUser = new SendMessage();
         replyToUser.setChatId(chatId);
         replyToUser.disableWebPagePreview();
         replyToUser.enableHtml(true);
 
+        mainParseAction(userId, chatId, replyToUser, userMsg);
+
+        tmpParsedItemAction(userId, chatId, replyToUser);
+
+        return replyToUser;
+    }
+
+    private void mainParseAction(Long userId, String chatId, SendMessage replyToUser, String userMsg) {
+        BotStatus botStatus = userRepository.getUserProfile(userId).getBotStatus();
+        UserProfile userProfile = userRepository.getUserProfile(userId);
         if (botStatus.equals(BotStatus.SHOW_PARSE)) {
             if (userMsg.equals(localeMessageService.getMessage("button.menu.showParse"))) {
                 replyToUser.setReplyMarkup(menuKeyboardService.getMenuKeyboard(Long.valueOf(chatId)));
@@ -106,8 +109,12 @@ public class ParseMessageHandler implements InputMessageHandler {
                 replyToUser.setText(localeMessageService.getMessage("reply.parse.error"));
             }
         }
+    }
 
+    private void tmpParsedItemAction(Long userId, String chatId, SendMessage replyToUser) {
+        UserProfile userProfile = userRepository.getUserProfile(userId);
         Item tmpParsedItem = userProfile.getTmpParsedItem();
+        BotStatus botStatus = userProfile.getBotStatus();
         if (isFillingItem(botStatus)) {
             if (tmpParsedItem.getItemOptionsList().get(0).getGroup() == null) {
                 if (botStatus.equals(BotStatus.ASK_COLOR)) {
@@ -135,10 +142,9 @@ public class ParseMessageHandler implements InputMessageHandler {
             userProfile.setBotStatus(BotStatus.SHOW_MENU);
             userRepository.saveUserProfile(userId, userProfile);
 
-
+            // NEED TO DO
             System.out.println(" >>> need to store the result to favorite");
         }
-        return replyToUser;
     }
 
     private String getItemNameWithOptions(Item tmpParsedItem) {

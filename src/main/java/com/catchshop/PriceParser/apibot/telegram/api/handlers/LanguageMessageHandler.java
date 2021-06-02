@@ -21,8 +21,8 @@ public class LanguageMessageHandler implements InputMessageHandler {
     }
 
     @Override
-    public SendMessage handle(Message message) {
-        String chatId = message.getChatId().toString();
+    public SendMessage handle(Message inputMessage) {
+        String chatId = inputMessage.getChatId().toString();
 
         SendMessage replyToUser = menuKeyboardService.getMenuMessage(chatId, localeMessageService.getMessage("reply.menu.showLanguages"));
         return replyToUser;
