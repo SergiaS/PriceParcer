@@ -3,9 +3,7 @@ package com.catchshop.PriceParser.apibot.telegram.api;
 import com.catchshop.PriceParser.apibot.telegram.PriceParserTelegramBot;
 import com.catchshop.PriceParser.apibot.telegram.model.UserProfile;
 import com.catchshop.PriceParser.apibot.telegram.repository.UserRepository;
-import com.catchshop.PriceParser.apibot.telegram.service.LanguageMenuService;
 import com.catchshop.PriceParser.apibot.telegram.service.LocaleMessageService;
-import com.catchshop.PriceParser.apibot.telegram.service.MainMenuService;
 import com.catchshop.PriceParser.bike.model.Item;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,20 +19,16 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 @Component
 @Slf4j
 public class TelegramStart {
-    private BotStatusContext botStatusContext;
-    private UserRepository userRepository;
-    private LocaleMessageService localeMessageService;
-    private MainMenuService mainMenuService;
-    private LanguageMenuService languageMenuService;
-    private PriceParserTelegramBot telegramBot;
+    private final BotStatusContext botStatusContext;
+    private final UserRepository userRepository;
+    private final LocaleMessageService localeMessageService;
+    private final PriceParserTelegramBot telegramBot;
 
     @Autowired
-    public TelegramStart(BotStatusContext botStatusContext, UserRepository userRepository, LocaleMessageService localeMessageService, MainMenuService mainMenuService, LanguageMenuService languageMenuService, @Lazy PriceParserTelegramBot telegramBot) {
+    public TelegramStart(BotStatusContext botStatusContext, UserRepository userRepository, LocaleMessageService localeMessageService, @Lazy PriceParserTelegramBot telegramBot) {
         this.botStatusContext = botStatusContext;
         this.userRepository = userRepository;
         this.localeMessageService = localeMessageService;
-        this.mainMenuService = mainMenuService;
-        this.languageMenuService = languageMenuService;
         this.telegramBot = telegramBot;
     }
 

@@ -3,10 +3,9 @@ package com.catchshop.PriceParser.apibot.telegram.api.handlers;
 import com.catchshop.PriceParser.apibot.telegram.PriceParserTelegramBot;
 import com.catchshop.PriceParser.apibot.telegram.api.BotStatus;
 import com.catchshop.PriceParser.apibot.telegram.api.InputMessageHandler;
-import com.catchshop.PriceParser.apibot.telegram.repository.UserRepository;
 import com.catchshop.PriceParser.apibot.telegram.service.LocaleMessageService;
+import com.catchshop.PriceParser.apibot.telegram.service.MenuKeyboardService;
 import com.catchshop.PriceParser.apibot.telegram.service.ReplyMessageService;
-import com.catchshop.PriceParser.apibot.telegram.service.SearchMenuService;
 import com.catchshop.PriceParser.apibot.telegram.util.FormattedResult;
 import com.catchshop.PriceParser.bike.enums.ParsedShop;
 import com.catchshop.PriceParser.bike.model.Item;
@@ -22,17 +21,15 @@ import java.util.List;
 
 @Component
 public class SearchMessageHandler implements InputMessageHandler {
-    private UserRepository userRepository;
-    private SearchMenuService searchMenuService;
-    private LocaleMessageService localeMessageService;
-    private ReplyMessageService replyMessageService;
-    private PriceParserTelegramBot telegramBot;
-    private FormattedResult formattedResult;
+    private final MenuKeyboardService menuKeyboardService;
+    private final LocaleMessageService localeMessageService;
+    private final ReplyMessageService replyMessageService;
+    private final PriceParserTelegramBot telegramBot;
+    private final FormattedResult formattedResult;
 
     @Autowired
-    public SearchMessageHandler(UserRepository userRepository, SearchMenuService searchMenuService, LocaleMessageService localeMessageService, ReplyMessageService replyMessageService, @Lazy PriceParserTelegramBot telegramBot, FormattedResult formattedResult) {
-        this.userRepository = userRepository;
-        this.searchMenuService = searchMenuService;
+    public SearchMessageHandler(MenuKeyboardService menuKeyboardService, LocaleMessageService localeMessageService, ReplyMessageService replyMessageService, @Lazy PriceParserTelegramBot telegramBot, FormattedResult formattedResult) {
+        this.menuKeyboardService = menuKeyboardService;
         this.localeMessageService = localeMessageService;
         this.replyMessageService = replyMessageService;
         this.telegramBot = telegramBot;
@@ -46,10 +43,9 @@ public class SearchMessageHandler implements InputMessageHandler {
 
     private SendMessage processUserInput(Message inputMessage) {
         String userText = inputMessage.getText();
-//        Long userId = inputMessage.getFrom().getId();
         String chatId = inputMessage.getChatId().toString();
 
-        SendMessage replyToUser = searchMenuService.getSearchMenuMessage(chatId, userText);
+        SendMessage replyToUser = menuKeyboardService.getMenuMessage(chatId, userText);
 
         if (userText.equals(localeMessageService.getMessage("button.menu.showSearch"))) {
             replyToUser.setText(localeMessageService.getMessage("reply.menu.showSearch"));

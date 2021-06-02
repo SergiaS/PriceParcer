@@ -6,7 +6,7 @@ import com.catchshop.PriceParser.apibot.telegram.api.InputMessageHandler;
 import com.catchshop.PriceParser.apibot.telegram.model.UserProfile;
 import com.catchshop.PriceParser.apibot.telegram.repository.UserRepository;
 import com.catchshop.PriceParser.apibot.telegram.service.LocaleMessageService;
-import com.catchshop.PriceParser.apibot.telegram.service.ParseMenuService;
+import com.catchshop.PriceParser.apibot.telegram.service.MenuKeyboardService;
 import com.catchshop.PriceParser.apibot.telegram.service.ReplyMessageService;
 import com.catchshop.PriceParser.apibot.telegram.util.FormattedResult;
 import com.catchshop.PriceParser.bike.model.Item;
@@ -21,24 +21,27 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 
 @Component
 public class ParseMessageHandler implements InputMessageHandler {
-    private LocaleMessageService localeMessageService;
-    private ReplyMessageService replyMessageService;
-    private PriceParserTelegramBot telegramBot;
-    private ParseMenuService parseMenuService;
-    private UserRepository userRepository;
-    private FormattedResult formattedResult;
-    private List<String> urlShopsList;
+    private final MenuKeyboardService menuKeyboardService;
+    private final LocaleMessageService localeMessageService;
+    private final ReplyMessageService replyMessageService;
+    private final PriceParserTelegramBot telegramBot;
+    private final UserRepository userRepository;
+    private final FormattedResult formattedResult;
+    private final List<String> urlShopsList;
 
     @Autowired
-    public ParseMessageHandler(LocaleMessageService localeMessageService, ReplyMessageService replyMessageService, @Lazy PriceParserTelegramBot telegramBot, ParseMenuService parseMenuService, UserRepository userRepository, FormattedResult formattedResult) {
+    public ParseMessageHandler(LocaleMessageService localeMessageService, ReplyMessageService replyMessageService, @Lazy PriceParserTelegramBot telegramBot, MenuKeyboardService menuKeyboardService, UserRepository userRepository, FormattedResult formattedResult) {
         this.localeMessageService = localeMessageService;
         this.replyMessageService = replyMessageService;
         this.telegramBot = telegramBot;
-        this.parseMenuService = parseMenuService;
+        this.menuKeyboardService = menuKeyboardService;
         this.userRepository = userRepository;
         this.formattedResult = formattedResult;
 
@@ -67,7 +70,7 @@ public class ParseMessageHandler implements InputMessageHandler {
 
         if (botStatus.equals(BotStatus.SHOW_PARSE)) {
             if (userMsg.equals(localeMessageService.getMessage("button.menu.showParse"))) {
-                replyToUser.setReplyMarkup(parseMenuService.getParseMenuKeyboard(chatId));
+                replyToUser.setReplyMarkup(menuKeyboardService.getMenuKeyboard(Long.valueOf(chatId)));
                 replyToUser.setText(String.format(localeMessageService.getMessage("reply.menu.showParse"), showListOfShops()));
             } else if (isBikeShopUrl(userMsg)) {
                 telegramBot.sendMessage(replyMessageService.getReplyMessage(chatId, "reply.parse.start"));
@@ -124,7 +127,7 @@ public class ParseMessageHandler implements InputMessageHandler {
         else if (botStatus.equals(BotStatus.SHOW_PARSE_END)) {
             if (tmpParsedItem != null) {
                 String result = String.format(localeMessageService.getMessage("reply.parse.end"), getItemNameWithOptions(tmpParsedItem));
-                replyToUser.setReplyMarkup(parseMenuService.getParseMenuKeyboard(chatId));
+                replyToUser.setReplyMarkup(menuKeyboardService.getMenuKeyboard(Long.valueOf(chatId)));
                 replyToUser.setText(result);
                 tmpParsedItem.setTempItemOptions(null);
                 userProfile.setTmpParsedItem(tmpParsedItem);
