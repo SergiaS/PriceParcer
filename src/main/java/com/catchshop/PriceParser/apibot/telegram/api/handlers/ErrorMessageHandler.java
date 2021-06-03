@@ -2,7 +2,7 @@ package com.catchshop.PriceParser.apibot.telegram.api.handlers;
 
 import com.catchshop.PriceParser.apibot.telegram.api.BotStatus;
 import com.catchshop.PriceParser.apibot.telegram.api.InputMessageHandler;
-import com.catchshop.PriceParser.apibot.telegram.service.LocaleMessageService;
+import com.catchshop.PriceParser.apibot.telegram.service.ReplyMessageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -10,20 +10,17 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 
 @Component
 public class ErrorMessageHandler implements InputMessageHandler {
-    private final LocaleMessageService localeMessageService;
+    private final ReplyMessageService replyMessageService;
 
     @Autowired
-    public ErrorMessageHandler(LocaleMessageService localeMessageService) {
-        this.localeMessageService = localeMessageService;
+    public ErrorMessageHandler(ReplyMessageService replyMessageService) {
+        this.replyMessageService = replyMessageService;
     }
 
     @Override
     public SendMessage handle(Message inputMessage) {
         String chatId = inputMessage.getChatId().toString();
-
-        SendMessage replyToUser = new SendMessage();
-        replyToUser.setText(localeMessageService.getMessage("reply.error.unknownCommand"));
-        replyToUser.setChatId(chatId);
+        SendMessage replyToUser = replyMessageService.getReplyMessage(chatId, "reply.error.unknownCommand");
         return replyToUser;
     }
 
