@@ -38,7 +38,7 @@ public class TelegramStart {
             CallbackQuery callbackQuery = update.getCallbackQuery();
             log.info("New callbackQuery from User: {}, userId: {}, with data: {}",
                     callbackQuery.getFrom().getUserName(), callbackQuery.getFrom().getId(), callbackQuery.getData());
-            processCallbackQueryFillingFavoriteItem(update);
+            addMessageToUpdate(update);
         }
 
         BotApiMethod<?> replyMessage = null;
@@ -51,37 +51,13 @@ public class TelegramStart {
         return replyMessage;
     }
 
-    /**
-     * Button click (callback) handler
-     * @param update
-     * For now it just change Update object without return.
-     */
-    private void processCallbackQueryFillingFavoriteItem(Update update) {
+    private void addMessageToUpdate(Update update) {
         CallbackQuery buttonQuery = update.getCallbackQuery();
-//        final String userChoice = buttonQuery.getMessage().getText();
-//        final Long chatId = buttonQuery.getMessage().getChatId();
-        final Long userId = buttonQuery.getFrom().getId();
-
-        UserProfile userProfile = userRepository.getUserProfile(userId);
-
-//        BotApiMethod<?> callbackAnswer = null;
         String buttonQueryData = buttonQuery.getData();
-
-        BotStatus botStatus = userProfile.getBotStatus();
-        ParseItem tmpParsedParseItem = userProfile.getTmpParsedItem();
 
         Message message = buttonQuery.getMessage();
         message.setFrom(buttonQuery.getFrom());
         message.setText(buttonQueryData);
-        if (botStatus.equals(BotStatus.ASK_COLOR)) {
-            tmpParsedParseItem.getOptions().setColor(buttonQueryData);
-        } else if (botStatus.equals(BotStatus.ASK_SIZE)) {
-            tmpParsedParseItem.getOptions().setSize(buttonQueryData);
-        } else if (botStatus.equals(BotStatus.ASK_GROUP)) {
-            tmpParsedParseItem.getOptions().setGroup(buttonQueryData);
-        }
-        userProfile.setTmpParsedItem(tmpParsedParseItem);
-        userRepository.saveUserProfile(userId, userProfile);
 
         update.setMessage(message);
     }
@@ -101,6 +77,7 @@ public class TelegramStart {
             botStatus = BotStatus.SHOW_PARSE;
         } else if (userRepositoryBotStatus == BotStatus.ASK_COLOR) {
             if (userRepository.getUserProfile(userId).getTmpParsedItem().getItemOptionsList().stream().anyMatch(color -> color.getColor().equals(inputMessage))) {
+                saveUserChoice(userId, inputMessage);
                 botStatus = BotStatus.ASK_SIZE;
             } else {
                 telegramBot.sendMessage(new SendMessage(userId.toString(), localeMessageService.getMessage("reply.parse.wrongOption")));
@@ -109,6 +86,7 @@ public class TelegramStart {
             }
         } else if (userRepositoryBotStatus == BotStatus.ASK_SIZE) {
             if (userRepository.getUserProfile(userId).getTmpParsedItem().getItemOptionsList().stream().anyMatch(size -> size.getSize().equals(inputMessage))) {
+                saveUserChoice(userId, inputMessage);
                 botStatus = BotStatus.ASK_TRACKING;
             } else {
                 telegramBot.sendMessage(new SendMessage(userId.toString(), localeMessageService.getMessage("reply.parse.wrongOption")));
@@ -125,6 +103,7 @@ public class TelegramStart {
                 botStatus = BotStatus.ASK_TRACKING;
             }
         } else if (userRepositoryBotStatus == BotStatus.ASK_GROUP) {
+            saveUserChoice(userId, inputMessage);
             botStatus = BotStatus.ASK_TRACKING;
         } else if (userRepositoryBotStatus == BotStatus.SHOW_PARSE_END) {
             botStatus = BotStatus.SHOW_PARSE;
@@ -153,6 +132,29 @@ public class TelegramStart {
         }
         userRepository.setBotStatus(userId, botStatus);
         return botStatusContext.processInputMessage(botStatus, message);
+    }
+
+    private void saveUserChoice(Long userId, String userChoice) {
+        UserProfile userProfile = userRepository.getUserProfile(userId);
+        BotStatus botStatus = userProfile.getBotStatus();
+        ParseItem tmpParsedParseItem = userProfile.getTmpParsedItem();
+
+        if (botStatus.equals(BotStatus.ASK_COLOR)) {
+            tmpParsedParseItem.getOptions().setColor(userChoice);
+        } else if (botStatus.equals(BotStatus.ASK_SIZE)) {
+            tmpParsedParseItem.getOptions().setSize(userChoice);
+        } else if (botStatus.equals(BotStatus.ASK_GROUP)) {
+            tmpParsedParseItem.getOptions().setGroup(userChoice);
+        }
+        userProfile.setTmpParsedItem(tmpParsedParseItem);
+        userRepository.saveUserProfile(userId, userProfile);
+    }
+
+    private BotApiMethod<?> processCallbackQueryFillingFavoriteItem(Update update) {
+        CallbackQuery buttonQuery = update.getCallbackQuery();
+        String buttonQueryData = buttonQuery.getData();
+        BotApiMethod<?> callbackAnswer = null;
+        return callbackAnswer;
     }
 
     private AnswerCallbackQuery sendAnswerCallbackQuery(String text, boolean alert, CallbackQuery callbackQuery) {

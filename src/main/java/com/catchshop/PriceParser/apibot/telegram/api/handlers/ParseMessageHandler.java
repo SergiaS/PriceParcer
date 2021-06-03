@@ -132,6 +132,7 @@ public class ParseMessageHandler implements InputMessageHandler {
         }
         // show results and save to favorite
         else if (botStatus.equals(BotStatus.SHOW_PARSE_END)) {
+            userProfile.setBotStatus(BotStatus.SHOW_MENU);
             if (tmpParsedParseItem != null) {
                 String result = String.format(localeMessageService.getMessage("reply.parse.end"), getItemNameWithOptions(tmpParsedParseItem));
                 replyToUser.setReplyMarkup(menuKeyboardService.getMenuKeyboard(Long.valueOf(chatId)));
@@ -139,7 +140,6 @@ public class ParseMessageHandler implements InputMessageHandler {
                 tmpParsedParseItem = null;
                 userProfile.setTmpParsedItem(tmpParsedParseItem);
             }
-            userProfile.setBotStatus(BotStatus.SHOW_MENU);
             userRepository.saveUserProfile(userId, userProfile);
 
             // NEED TO DO

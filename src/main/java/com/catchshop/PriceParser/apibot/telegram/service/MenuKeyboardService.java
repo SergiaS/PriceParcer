@@ -52,11 +52,6 @@ public class MenuKeyboardService {
                     "button.menu.language.english",
                     "button.menu.language.russian");
             keyboard.add(row);
-        } else if (botStatus.equals(BotStatus.SHOW_PARSE_END)) {
-            KeyboardRow row = keyboardRowsConstructor(
-                    "button.menu.showParse",
-                    "button.menu.showFavorites");
-            keyboard.add(row);
         }
 
         if (!botStatus.equals(BotStatus.SHOW_MENU)) {
