@@ -93,6 +93,15 @@ public class TelegramStart {
                 makeSomePause(1000);
                 botStatus = userRepositoryBotStatus;
             }
+        } else if (userRepositoryBotStatus == BotStatus.ASK_GROUP) {
+            if (userRepository.getUserProfile(userId).getTmpParsedItem().getItemOptionsList().stream().anyMatch(size -> size.getGroup().equals(inputMessage))) {
+                saveUserChoice(userId, inputMessage);
+                botStatus = BotStatus.ASK_TRACKING;
+            } else {
+                telegramBot.sendMessage(new SendMessage(userId.toString(), localeMessageService.getMessage("reply.parse.wrongOption")));
+                makeSomePause(1000);
+                botStatus = userRepositoryBotStatus;
+            }
         } else if (userRepositoryBotStatus == BotStatus.ASK_TRACKING) {
             if (inputMessage.equals(localeMessageService.getMessage("reply.answer.yes"))) {
                 botStatus = BotStatus.SHOW_PARSE_END;
@@ -102,9 +111,6 @@ public class TelegramStart {
                 telegramBot.sendMessage(new SendMessage(userId.toString(), localeMessageService.getMessage("reply.parse.wrongOption")));
                 botStatus = BotStatus.ASK_TRACKING;
             }
-        } else if (userRepositoryBotStatus == BotStatus.ASK_GROUP) {
-            saveUserChoice(userId, inputMessage);
-            botStatus = BotStatus.ASK_TRACKING;
         } else if (userRepositoryBotStatus == BotStatus.SHOW_PARSE_END) {
             botStatus = BotStatus.SHOW_PARSE;
         } else if (inputMessage.equals(localeMessageService.getMessage("button.menu.showFavorites"))) {
