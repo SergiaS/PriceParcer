@@ -2,6 +2,9 @@ package com.catchshop.PriceParser.bike.util;
 
 import com.catchshop.PriceParser.apibot.telegram.model.ParseItem;
 import com.catchshop.PriceParser.bike.model.ItemOptions;
+import com.catchshop.PriceParser.bike.shops.MainParser;
+import com.catchshop.PriceParser.bike.shops.bike24.Bike24Parser;
+import com.catchshop.PriceParser.bike.shops.wiggle.WiggleParser;
 
 import javax.net.ssl.*;
 import java.math.BigDecimal;
@@ -116,4 +119,12 @@ public class ShopHelper {
     public static String returnNullIfEmpty(String text) {
         return text.equals("") ? null : text;
     }
+
+    public static MainParser storeIdentifier(String itemUrl) {
+        if (itemUrl.contains("wiggle")) {
+            return new WiggleParser();
+        }
+        return new Bike24Parser();
+    }
+
 }

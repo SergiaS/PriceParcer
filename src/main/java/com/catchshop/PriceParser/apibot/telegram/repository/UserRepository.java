@@ -4,11 +4,13 @@ import com.catchshop.PriceParser.apibot.telegram.api.BotStatus;
 import com.catchshop.PriceParser.apibot.telegram.model.FavoriteItem;
 import com.catchshop.PriceParser.apibot.telegram.model.UserProfile;
 import com.catchshop.PriceParser.apibot.telegram.model.ParseItem;
+import com.catchshop.PriceParser.apibot.telegram.util.ResultManager;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayDeque;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * In-memory DB.
@@ -16,7 +18,15 @@ import java.util.Set;
 @Repository
 public class UserRepository implements MainRepository {
 
+    private final ResultManager resultManager;
+
     private final Map<Long, UserProfile> userProfilesDB = new HashMap<>();
+
+    @Autowired
+    public UserRepository(ResultManager resultManager) {
+        this.resultManager = resultManager;
+        userProfilesDB.put(564108458L, new UserProfile(564108458L, resultManager));
+    }
 
     @Override
     public BotStatus getBotStatus(Long userId) {
@@ -35,7 +45,7 @@ public class UserRepository implements MainRepository {
     public UserProfile getUserProfile(Long userId) {
         UserProfile userProfile = userProfilesDB.get(userId);
         if (userProfile == null) {
-            userProfile = new UserProfile();
+            userProfile = new UserProfile(userId, resultManager);
         }
         return userProfile;
     }
@@ -61,16 +71,15 @@ public class UserRepository implements MainRepository {
         saveUserProfile(userId, userProfile);
     }
 
-
     @Override
-    public Set<FavoriteItem> getAllItems(Long userId) {
+    public ArrayDeque<FavoriteItem> getAllItems(Long userId) {
         UserProfile userProfile = userProfilesDB.get(userId);
         return userProfile.getFavorites();
     }
 
     @Override
     public ParseItem getItem(Long userId, ParseItem parseItem) {
-        Set<FavoriteItem> favorites = userProfilesDB.get(userId).getFavorites();
+        ArrayDeque<FavoriteItem> favorites = userProfilesDB.get(userId).getFavorites();
         if (favorites.contains(parseItem)) {
             return parseItem;
         }
@@ -86,7 +95,7 @@ public class UserRepository implements MainRepository {
     @Override
     public void deleteItem(Long userId, ParseItem parseItem) {
         UserProfile userProfile = userProfilesDB.get(userId);
-        Set<FavoriteItem> favorites = userProfile.getFavorites();
+        ArrayDeque<FavoriteItem> favorites = userProfile.getFavorites();
         favorites.remove(parseItem);
     }
 }

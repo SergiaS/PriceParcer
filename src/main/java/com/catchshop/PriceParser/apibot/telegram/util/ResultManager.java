@@ -1,6 +1,7 @@
 package com.catchshop.PriceParser.apibot.telegram.util;
 
 import com.catchshop.PriceParser.apibot.telegram.PriceParserTelegramBot;
+import com.catchshop.PriceParser.apibot.telegram.model.FavoriteItem;
 import com.catchshop.PriceParser.apibot.telegram.model.ParseItem;
 import com.catchshop.PriceParser.bike.model.ItemOptions;
 import lombok.extern.slf4j.Slf4j;
@@ -9,16 +10,17 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
+import java.math.BigDecimal;
 import java.util.List;
 
-@Component
 @Slf4j
-public class FormattedResult {
+@Component
+public class ResultManager {
 
     private final PriceParserTelegramBot telegramBot;
 
     @Autowired
-    public FormattedResult(@Lazy PriceParserTelegramBot telegramBot) {
+    public ResultManager(@Lazy PriceParserTelegramBot telegramBot) {
         this.telegramBot = telegramBot;
     }
 
@@ -81,4 +83,40 @@ public class FormattedResult {
         resMsg.setDisableWebPagePreview(true);
         telegramBot.sendMessage(resMsg);
     }
+
+    public void notifyIfItemUpdated(String chatId, FavoriteItem oldItem, FavoriteItem newItem) {
+        StringBuilder result = new StringBuilder();
+
+        if (!oldItem.getTitle().equals(newItem.getTitle()) && !oldItem.getShop().equals(newItem.getShop())) {
+            result.append("The items are different!");
+        } else {
+            ItemOptions oldItemOptions = oldItem.getOptions();
+            ItemOptions newItemOptions = newItem.getOptions();
+            BigDecimal oldPrice = oldItemOptions.getPrice();
+            BigDecimal newPrice = newItemOptions.getPrice();
+            if (!oldPrice.equals(newPrice)) {
+                BigDecimal priceDifference = newPrice.subtract(oldPrice);
+                String priceText = priceDifference.compareTo(BigDecimal.ZERO) > 0 ? "⬆ " : "⬇ ";
+                result.append("\n✅ Price is changed from <b><u>").append(oldPrice).append("</u></b> to <b><u>").append(newPrice).append("</u></b>. ")
+                        .append(priceText).append(priceDifference).append(oldItem.getShop().getChosenCurrency());
+            }
+
+            String oldStatus = oldItemOptions.getStatus();
+            String newStatus = newItemOptions.getStatus();
+            if (!oldStatus.equals(newStatus)) {
+                result.append("\n✅ Status is changed from <b><u>").append(oldStatus).append("</u></b> to <b><u>").append(newStatus).append("</u></b>.");
+            }
+
+            if (result.length() != 0) {
+                result.append("\n").insert(0, "\uD83D\uDD14 " + "I found some changes on your favorite item:\n" +
+                        "⭐ " + newItem.getShop().getName() + " <a href=\"" + newItem.getUrl() + "\">" + newItem.getTitle() + "</a>");
+//                result.append("\n").append("\uD83D\uDD14⬆️⬇✅️\uD83D\uDD3C ❌ \uD83D\uDFE2 \uD83D\uDD34⭐");
+                sendResultToTelegram(chatId, result.toString());
+            } else {
+                result.append("❌ ").append(newItem.getTitle());
+            }
+        }
+        log.info(result.toString());
+    }
 }
+

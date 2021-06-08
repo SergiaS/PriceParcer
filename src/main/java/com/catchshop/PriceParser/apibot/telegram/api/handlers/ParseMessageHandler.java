@@ -8,7 +8,7 @@ import com.catchshop.PriceParser.apibot.telegram.repository.UserRepository;
 import com.catchshop.PriceParser.apibot.telegram.service.LocaleMessageService;
 import com.catchshop.PriceParser.apibot.telegram.service.MenuKeyboardService;
 import com.catchshop.PriceParser.apibot.telegram.service.ReplyMessageService;
-import com.catchshop.PriceParser.apibot.telegram.util.FormattedResult;
+import com.catchshop.PriceParser.apibot.telegram.util.ResultManager;
 import com.catchshop.PriceParser.apibot.telegram.model.ParseItem;
 import com.catchshop.PriceParser.bike.model.ItemOptions;
 import com.catchshop.PriceParser.bike.shops.bike24.Bike24Parser;
@@ -33,17 +33,17 @@ public class ParseMessageHandler implements InputMessageHandler {
     private final ReplyMessageService replyMessageService;
     private final PriceParserTelegramBot telegramBot;
     private final UserRepository userRepository;
-    private final FormattedResult formattedResult;
+    private final ResultManager resultManager;
     private final List<String> urlShopsList;
 
     @Autowired
-    public ParseMessageHandler(LocaleMessageService localeMessageService, ReplyMessageService replyMessageService, @Lazy PriceParserTelegramBot telegramBot, MenuKeyboardService menuKeyboardService, UserRepository userRepository, FormattedResult formattedResult) {
+    public ParseMessageHandler(LocaleMessageService localeMessageService, ReplyMessageService replyMessageService, @Lazy PriceParserTelegramBot telegramBot, MenuKeyboardService menuKeyboardService, UserRepository userRepository, ResultManager resultManager) {
         this.localeMessageService = localeMessageService;
         this.replyMessageService = replyMessageService;
         this.telegramBot = telegramBot;
         this.menuKeyboardService = menuKeyboardService;
         this.userRepository = userRepository;
-        this.formattedResult = formattedResult;
+        this.resultManager = resultManager;
 
         this.urlShopsList = new ArrayList<>();
         urlShopsList.add("https://www.wiggle.co.uk/");
@@ -91,7 +91,7 @@ public class ParseMessageHandler implements InputMessageHandler {
                     replyToUser.setText(localeMessageService.getMessage("reply.notFound"));
                     botStatus = BotStatus.SHOW_PARSE_END;
                 } else {
-                    formattedResult.showItemFormattedResults(chatId, parseParseItemInfo);
+                    resultManager.showItemFormattedResults(chatId, parseParseItemInfo);
 
                     ItemOptions itemOptions = parseParseItemInfo.getItemOptionsList().get(0);
                     if (itemOptions.getGroup() != null) {

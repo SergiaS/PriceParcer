@@ -75,5 +75,16 @@ public class ItemOptions {
     public int hashCode() {
         return Objects.hash(group, color, size, price, status);
     }
+
+    @Override
+    public String toString() {
+        return "ItemOptions{" +
+                "group='" + group + '\'' +
+                ", color='" + color + '\'' +
+                ", size='" + size + '\'' +
+                ", price=" + price +
+                ", status='" + status + '\'' +
+                '}';
+    }
 }
 

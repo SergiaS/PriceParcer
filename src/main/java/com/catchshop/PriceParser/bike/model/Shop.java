@@ -91,4 +91,15 @@ public class Shop {
                 ", deliveryCost='" + deliveryCost +
                 '}';
     }
+
+    public static Shop getExampleShop(ParsedShop parsedShop) {
+        switch (parsedShop) {
+            case WIGGLE:
+                return new Shop(ParsedShop.WIGGLE, "https://www.wiggle.co.uk/",true, "$","England", "Ukraine", "12.99");
+            case BIKE24:
+                return new Shop(ParsedShop.BIKE24, "https://www.bike24.com/",false, "€","Germany", "Ukraine", "19.99");
+
+        }
+        return null;
+    }
 }

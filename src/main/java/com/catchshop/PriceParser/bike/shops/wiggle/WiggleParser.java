@@ -4,6 +4,7 @@ import com.catchshop.PriceParser.bike.enums.ParsedShop;
 import com.catchshop.PriceParser.apibot.telegram.model.ParseItem;
 import com.catchshop.PriceParser.bike.model.ItemOptions;
 import com.catchshop.PriceParser.bike.model.Shop;
+import com.catchshop.PriceParser.bike.shops.MainParser;
 import com.catchshop.PriceParser.bike.util.ShopHelper;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -23,7 +24,7 @@ import java.util.List;
  * Restricted to 25 items! Too long message (for example hit "Five Ten Freeride")
  */
 
-public class WiggleParser {
+public class WiggleParser extends MainParser {
     public static final String CURRENCY_TEXT = "USD"; // EUR
     private final String SITE = "https://www.wiggle.co.uk/?s=";
     private final String SORT_BY = "&o=2"; // site sort - second parameter (Price: Low to High)
@@ -31,16 +32,16 @@ public class WiggleParser {
     private final String CURRENCY = "curr=" + CURRENCY_TEXT;
     private final String COUNTRY = "&prevDestCountryId=99&dest=1";
 
-    private Shop wiggleShop = getShop();
+    private final Shop wiggleShop = getShop();
 
     public static void main(String[] args) {
         WiggleParser wp = new WiggleParser();
-        ShopHelper.printItems(wp.wiggleSearcher("castelli gloves white"));
+        ShopHelper.printItems(wp.searcher("castelli gloves white"));
 
 //        ShopHelper.printItem(wp.parseItemInfo("https://www.wiggle.co.uk/castelli-arenberg-gel-2-cycling-gloves"), CURRENCY_SIGN);
     }
 
-    public List<ParseItem> wiggleSearcher(String textToSearch) {
+    public List<ParseItem> searcher(String textToSearch) {
         String catalogItemsUrl = SITE +
                 textToSearch.replace(" ", "+") +
                 SORT_BY +
@@ -89,7 +90,7 @@ public class WiggleParser {
         return parseItem;
     }
 
-    private List<ItemOptions> parseItemOptions(Document doc) {
+    protected List<ItemOptions> parseItemOptions(Document doc) {
         List<ItemOptions> res = new ArrayList<>();
 
         Elements options = doc
@@ -135,25 +136,4 @@ public class WiggleParser {
                 "n/a");
     }
 
-//    public String getFormattedResult(Item item) {
-//        if (itemList.size() == 0) {
-//            return "Nothing was found";
-//        }
-//
-//        int count = 1;
-//        StringBuilder result = new StringBuilder();
-//        for (FavoriteItem item : itemList) {
-//            result.append("<u>").append(count).append(" <a href=\"").append(item.getURL()).append("\">").append(item.getItemName())
-//                    .append("</a> ").append(item.getRangePrice()).append("</u>").append("\n");
-//            count++;
-//
-//            for (ShopOptions options : item.getShopOptionsList()) {
-//                result.append("<b>").append(CURRENCY_SIGN).append(options.getPrice()).append("</b>")
-//                        .append(options.getColor().isEmpty() ? "" : ", " + options.getColor())
-//                        .append(options.getSize().isEmpty() ? "" : ", " + options.getSize())
-//                        .append(", ").append(options.getStatus()).append("\n");
-//            }
-//        }
-//        return result.toString();
-//    }
 }

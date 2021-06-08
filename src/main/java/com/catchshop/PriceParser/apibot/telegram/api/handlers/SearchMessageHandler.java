@@ -6,7 +6,7 @@ import com.catchshop.PriceParser.apibot.telegram.api.InputMessageHandler;
 import com.catchshop.PriceParser.apibot.telegram.service.LocaleMessageService;
 import com.catchshop.PriceParser.apibot.telegram.service.MenuKeyboardService;
 import com.catchshop.PriceParser.apibot.telegram.service.ReplyMessageService;
-import com.catchshop.PriceParser.apibot.telegram.util.FormattedResult;
+import com.catchshop.PriceParser.apibot.telegram.util.ResultManager;
 import com.catchshop.PriceParser.bike.enums.ParsedShop;
 import com.catchshop.PriceParser.apibot.telegram.model.ParseItem;
 import com.catchshop.PriceParser.bike.shops.bike24.Bike24Parser;
@@ -25,15 +25,15 @@ public class SearchMessageHandler implements InputMessageHandler {
     private final LocaleMessageService localeMessageService;
     private final ReplyMessageService replyMessageService;
     private final PriceParserTelegramBot telegramBot;
-    private final FormattedResult formattedResult;
+    private final ResultManager resultManager;
 
     @Autowired
-    public SearchMessageHandler(MenuKeyboardService menuKeyboardService, LocaleMessageService localeMessageService, ReplyMessageService replyMessageService, @Lazy PriceParserTelegramBot telegramBot, FormattedResult formattedResult) {
+    public SearchMessageHandler(MenuKeyboardService menuKeyboardService, LocaleMessageService localeMessageService, ReplyMessageService replyMessageService, @Lazy PriceParserTelegramBot telegramBot, ResultManager resultManager) {
         this.menuKeyboardService = menuKeyboardService;
         this.localeMessageService = localeMessageService;
         this.replyMessageService = replyMessageService;
         this.telegramBot = telegramBot;
-        this.formattedResult = formattedResult;
+        this.resultManager = resultManager;
     }
 
     @Override
@@ -50,11 +50,11 @@ public class SearchMessageHandler implements InputMessageHandler {
             telegramBot.sendMessage(replyMessageService.getReplyMessage(chatId, "reply.search.start"));
 
             WiggleParser wp = new WiggleParser();
-            List<ParseItem> wiggleItemsList = wp.wiggleSearcher(userText);
+            List<ParseItem> wiggleItemsList = wp.searcher(userText);
             messageIfNotFound(chatId, wiggleItemsList, ParsedShop.WIGGLE.name());
 
             Bike24Parser b24p = new Bike24Parser();
-            List<ParseItem> bike24ItemsList = b24p.bike24Searcher(userText);
+            List<ParseItem> bike24ItemsList = b24p.searcher(userText);
             messageIfNotFound(chatId, bike24ItemsList, ParsedShop.BIKE24.name());
 
             if (!wiggleItemsList.isEmpty() || !bike24ItemsList.isEmpty()) {
@@ -76,7 +76,7 @@ public class SearchMessageHandler implements InputMessageHandler {
             telegramBot.sendMessage(new SendMessage(chatId, String.format(localeMessageService.getMessage("reply.notFound"), shopName)));
         } else {
             telegramBot.sendMessage(new SendMessage(chatId, String.format(localeMessageService.getMessage("reply.search.results"), shopName)));
-            formattedResult.showShopsFormattedResults(chatId, parseItems);
+            resultManager.showShopsFormattedResults(chatId, parseItems);
         }
     }
 }

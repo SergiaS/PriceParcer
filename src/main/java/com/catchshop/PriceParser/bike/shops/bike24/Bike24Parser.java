@@ -4,6 +4,7 @@ import com.catchshop.PriceParser.bike.enums.ParsedShop;
 import com.catchshop.PriceParser.apibot.telegram.model.ParseItem;
 import com.catchshop.PriceParser.bike.model.ItemOptions;
 import com.catchshop.PriceParser.bike.model.Shop;
+import com.catchshop.PriceParser.bike.shops.MainParser;
 import com.catchshop.PriceParser.bike.util.ShopHelper;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -21,12 +22,12 @@ import java.util.List;
  * Can parse first 30 positions (first page) and specific position by url of Bike24.
  * Returns sorted result - positions and their options by price.
  */
-public class Bike24Parser {
+public class Bike24Parser extends MainParser {
     private final String SITE = "https://www.bike24.com";
     private final String SEARCH = "/search?searchTerm=";
     private final String SORT_BY = "&sort=price_asc";
 
-    private Shop bike24Shop = getShop();
+    private final Shop bike24Shop = getShop();
 
     public static void main(String[] args) {
         Bike24Parser b24 = new Bike24Parser();
@@ -35,7 +36,7 @@ public class Bike24Parser {
         ShopHelper.printItem(b24.parseItemInfo("https://www.bike24.com/p2382639.html"));
     }
 
-    public List<ParseItem> bike24Searcher(String textToSearch) {
+    public List<ParseItem> searcher(String textToSearch) {
         String catalogUrl = SITE + SEARCH + textToSearch + SORT_BY;
 
         List<ParseItem> itemsList = new ArrayList<>();
@@ -89,7 +90,7 @@ public class Bike24Parser {
     }
 
 
-    private List<ItemOptions> parseItemOptions(Document doc) {
+    protected List<ItemOptions> parseItemOptions(Document doc) {
         List<ItemOptions> res = new ArrayList<>();
 
         BigDecimal basePrice = new BigDecimal(doc.select("span.text-value,js-price-value")
@@ -121,13 +122,6 @@ public class Bike24Parser {
         return res;
     }
 
-    // will remove info like " - add 0,84 €" and "head circumference"
-    private static String cleanGroupValue(String group) {
-        return group.replace(" head circumference", "")
-                .replace("not deliverable: ", "")
-                .replaceAll("\\s-\\s(add)\\s[\\d]*,[\\d]*\\s€", "");
-    }
-
     private Shop getShop() {
         return new Shop(
                 ParsedShop.BIKE24,
@@ -138,4 +132,12 @@ public class Bike24Parser {
                 "Germany",
                 "n/a");
     }
+
+    // will remove info like " - add 0,84 €" and "head circumference"
+    private static String cleanGroupValue(String group) {
+        return group.replace(" head circumference", "")
+                .replace("not deliverable: ", "")
+                .replaceAll("\\s-\\s(add)\\s[\\d]*,[\\d]*\\s€", "");
+    }
+
 }
