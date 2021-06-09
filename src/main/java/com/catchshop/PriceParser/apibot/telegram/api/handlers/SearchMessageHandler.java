@@ -76,7 +76,7 @@ public class SearchMessageHandler implements InputMessageHandler {
             telegramBot.sendMessage(new SendMessage(chatId, String.format(localeMessageService.getMessage("reply.notFound"), shopName)));
         } else {
             telegramBot.sendMessage(new SendMessage(chatId, String.format(localeMessageService.getMessage("reply.search.results"), shopName)));
-            resultManager.showShopsFormattedResults(chatId, parseItems);
+            resultManager.sendParseItemFormattedResults(chatId, parseItems);
         }
     }
 }

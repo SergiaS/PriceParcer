@@ -3,6 +3,7 @@ package com.catchshop.PriceParser.apibot.telegram.util;
 import com.catchshop.PriceParser.apibot.telegram.PriceParserTelegramBot;
 import com.catchshop.PriceParser.apibot.telegram.model.FavoriteItem;
 import com.catchshop.PriceParser.apibot.telegram.model.ParseItem;
+import com.catchshop.PriceParser.apibot.telegram.service.LocaleMessageService;
 import com.catchshop.PriceParser.bike.model.ItemOptions;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
 import java.math.BigDecimal;
+import java.util.Comparator;
 import java.util.List;
 
 @Slf4j
@@ -18,10 +20,12 @@ import java.util.List;
 public class ResultManager {
 
     private final PriceParserTelegramBot telegramBot;
+    private final LocaleMessageService localeMessageService;
 
     @Autowired
-    public ResultManager(@Lazy PriceParserTelegramBot telegramBot) {
+    public ResultManager(@Lazy PriceParserTelegramBot telegramBot, LocaleMessageService localeMessageService) {
         this.telegramBot = telegramBot;
+        this.localeMessageService = localeMessageService;
     }
 
     public void showItemFormattedResults(String chatId, ParseItem parseItem) {
@@ -36,8 +40,8 @@ public class ResultManager {
         sendResultToTelegram(chatId, result.toString());
     }
 
-    public void showShopsFormattedResults(String chatId, List<ParseItem> parseItemList) {
-        log.info("Format {} shop results, Total № of items: {}", parseItemList.get(0).getShop(), parseItemList.size());
+    public void sendParseItemFormattedResults(String chatId, List<ParseItem> parseItemList) {
+        log.info("ParseItem formatted results for shop {}, Total № of items: {}", parseItemList.get(0).getShop(), parseItemList.size());
 
         int count = 1;
         StringBuilder result = new StringBuilder();
@@ -56,6 +60,29 @@ public class ResultManager {
                     result.setLength(0);
                 }
             }
+        }
+        sendResultToTelegram(chatId, result.toString());
+    }
+
+    public void sendFavoriteItemFormattedResult(String chatId, List<FavoriteItem> favorites) {
+        log.info("FavoriteItem formatted results. Total № of items: {}", favorites.size());
+
+        StringBuilder result = new StringBuilder(localeMessageService.getMessage("reply.menu.showFavorites"));
+
+        favorites.sort(Comparator.comparing(x -> x.getShop().getName()));
+
+        int count = 1;
+        for (FavoriteItem favoriteItem : favorites) {
+
+            result.append("<u>").append(count++).append(" ").append(favoriteItem.getShop().getName()).append(" <a href=\"").append(favoriteItem.getUrl()).append("\">").append(favoriteItem.getTitle())
+                    .append("</a></u>").append("\n").append(favoriteItem.getShop().getChosenCurrency()).append(favoriteItem.getOptions().getPrice()).append(", ");
+
+            if (favoriteItem.getOptions().getGroup() != null) {
+                result.append(favoriteItem.getOptions().getGroup());
+            } else {
+                result.append(favoriteItem.getOptions().getColor()).append(", ").append(favoriteItem.getOptions().getSize());
+            }
+            result.append(", ").append(favoriteItem.getOptions().getStatus()).append("\n");
         }
         sendResultToTelegram(chatId, result.toString());
     }
@@ -88,7 +115,9 @@ public class ResultManager {
         StringBuilder result = new StringBuilder();
 
         if (!oldItem.getTitle().equals(newItem.getTitle()) && !oldItem.getShop().equals(newItem.getShop())) {
-            result.append("The items are different!");
+            result.append(localeMessageService.getMessage("reply.favorites.changedDifferenceError"));
+        } else if (newItem.getOptions().getGroup() == null && newItem.getOptions().getColor() == null) {
+            result.append(localeMessageService.getMessage("reply.favorites.changedParameterError"));
         } else {
             ItemOptions oldItemOptions = oldItem.getOptions();
             ItemOptions newItemOptions = newItem.getOptions();
@@ -96,21 +125,20 @@ public class ResultManager {
             BigDecimal newPrice = newItemOptions.getPrice();
             if (!oldPrice.equals(newPrice)) {
                 BigDecimal priceDifference = newPrice.subtract(oldPrice);
-                String priceText = priceDifference.compareTo(BigDecimal.ZERO) > 0 ? "⬆ " : "⬇ ";
-                result.append("\n✅ Price is changed from <b><u>").append(oldPrice).append("</u></b> to <b><u>").append(newPrice).append("</u></b>. ")
-                        .append(priceText).append(priceDifference).append(oldItem.getShop().getChosenCurrency());
+                String priceDirectionSymbol = priceDifference.compareTo(BigDecimal.ZERO) > 0 ? " ⬆ " : " ⬇ ";
+                result.append(String.format(localeMessageService.getMessage("reply.favorites.changedPrice"), oldPrice, newPrice))
+                        .append(priceDirectionSymbol).append(priceDifference).append(oldItem.getShop().getChosenCurrency());
             }
 
             String oldStatus = oldItemOptions.getStatus();
             String newStatus = newItemOptions.getStatus();
             if (!oldStatus.equals(newStatus)) {
-                result.append("\n✅ Status is changed from <b><u>").append(oldStatus).append("</u></b> to <b><u>").append(newStatus).append("</u></b>.");
+                result.append(String.format(localeMessageService.getMessage("reply.favorites.changedStatus"), oldStatus, newStatus));
             }
 
             if (result.length() != 0) {
-                result.append("\n").insert(0, "\uD83D\uDD14 " + "I found some changes on your favorite item:\n" +
-                        "⭐ " + newItem.getShop().getName() + " <a href=\"" + newItem.getUrl() + "\">" + newItem.getTitle() + "</a>");
-//                result.append("\n").append("\uD83D\uDD14⬆️⬇✅️\uD83D\uDD3C ❌ \uD83D\uDFE2 \uD83D\uDD34⭐");
+                result.append("\n").insert(0,
+                        String.format(localeMessageService.getMessage("reply.favorites.changed"), newItem.getShop().getName(), newItem.getUrl(), newItem.getTitle()));
                 sendResultToTelegram(chatId, result.toString());
             } else {
                 result.append("❌ ").append(newItem.getTitle());

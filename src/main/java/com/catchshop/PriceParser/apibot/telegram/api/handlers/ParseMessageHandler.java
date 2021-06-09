@@ -3,6 +3,7 @@ package com.catchshop.PriceParser.apibot.telegram.api.handlers;
 import com.catchshop.PriceParser.apibot.telegram.PriceParserTelegramBot;
 import com.catchshop.PriceParser.apibot.telegram.api.BotStatus;
 import com.catchshop.PriceParser.apibot.telegram.api.InputMessageHandler;
+import com.catchshop.PriceParser.apibot.telegram.model.FavoriteItem;
 import com.catchshop.PriceParser.apibot.telegram.model.UserProfile;
 import com.catchshop.PriceParser.apibot.telegram.repository.UserRepository;
 import com.catchshop.PriceParser.apibot.telegram.service.LocaleMessageService;
@@ -78,22 +79,22 @@ public class ParseMessageHandler implements InputMessageHandler {
             } else if (isBikeShopUrl(userMsg)) {
                 telegramBot.sendMessage(replyMessageService.getReplyMessage(chatId, "reply.parse.start"));
 
-                ParseItem parseParseItemInfo = null;
+                ParseItem parseItemInfo = null;
                 if (userMsg.contains("wiggle")) {
                     WiggleParser wiggleParser = new WiggleParser();
-                    parseParseItemInfo = wiggleParser.parseItemInfo(userMsg);
+                    parseItemInfo = wiggleParser.parseItemInfo(userMsg);
                 } else if (userMsg.contains("bike24")) {
                     Bike24Parser bike24Parser = new Bike24Parser();
-                    parseParseItemInfo = bike24Parser.parseItemInfo(userMsg);
+                    parseItemInfo = bike24Parser.parseItemInfo(userMsg);
                 }
 
-                if (parseParseItemInfo == null) {
+                if (parseItemInfo == null) {
                     replyToUser.setText(localeMessageService.getMessage("reply.notFound"));
                     botStatus = BotStatus.SHOW_PARSE_END;
                 } else {
-                    resultManager.showItemFormattedResults(chatId, parseParseItemInfo);
+                    resultManager.showItemFormattedResults(chatId, parseItemInfo);
 
-                    ItemOptions itemOptions = parseParseItemInfo.getItemOptionsList().get(0);
+                    ItemOptions itemOptions = parseItemInfo.getItemOptionsList().get(0);
                     if (itemOptions.getGroup() != null) {
                         botStatus = BotStatus.ASK_GROUP;
                     } else if (itemOptions.getColor() != null) {
@@ -101,7 +102,7 @@ public class ParseMessageHandler implements InputMessageHandler {
                     } else {
                         botStatus = BotStatus.ASK_TRACKING;
                     }
-                    userProfile.setTmpParsedItem(parseParseItemInfo);
+                    userProfile.setTmpParsedItem(parseItemInfo);
                 }
                 userProfile.setBotStatus(botStatus);
                 userRepository.saveUserProfile(userId, userProfile);
@@ -137,13 +138,12 @@ public class ParseMessageHandler implements InputMessageHandler {
                 String result = String.format(localeMessageService.getMessage("reply.parse.end"), getItemNameWithOptions(tmpParsedParseItem));
                 replyToUser.setReplyMarkup(menuKeyboardService.getMenuKeyboard(Long.valueOf(chatId)));
                 replyToUser.setText(result);
+
+                userProfile.getFavorites().add(FavoriteItem.convertToFavoriteItem(tmpParsedParseItem));
                 tmpParsedParseItem = null;
                 userProfile.setTmpParsedItem(tmpParsedParseItem);
             }
             userRepository.saveUserProfile(userId, userProfile);
-
-            // NEED TO DO
-            System.out.println(" >>> need to store the result to favorite");
         }
     }
 
