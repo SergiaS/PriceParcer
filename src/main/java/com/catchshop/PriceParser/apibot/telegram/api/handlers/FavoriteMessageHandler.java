@@ -12,8 +12,7 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
-import java.util.ArrayDeque;
-import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class FavoriteMessageHandler implements InputMessageHandler {
@@ -35,13 +34,13 @@ public class FavoriteMessageHandler implements InputMessageHandler {
         Long userId = inputMessage.getFrom().getId();
         Long chatId = inputMessage.getChatId();
 
-        ArrayDeque<FavoriteItem> allItems = userRepository.getAllItems(userId);
+        List<FavoriteItem> allItems = userRepository.getAllItems(userId);
         SendMessage replyToUser = null;
         if (allItems.size() == 0) {
             replyToUser = messageService.getReplyMessage(chatId.toString(), "reply.favorites.ifEmpty");
         } else {
             // show result
-            resultManager.sendFavoriteItemFormattedResult(chatId.toString(), new ArrayList<>(allItems));
+            resultManager.sendFavoriteItemFormattedResult(chatId.toString(), allItems);
 
             // than ask - choose action
             // and show menu - Main menu, Parse item, Delete ...

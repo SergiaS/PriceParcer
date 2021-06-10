@@ -2,14 +2,14 @@ package com.catchshop.PriceParser.apibot.telegram.repository;
 
 import com.catchshop.PriceParser.apibot.telegram.api.BotStatus;
 import com.catchshop.PriceParser.apibot.telegram.model.FavoriteItem;
-import com.catchshop.PriceParser.apibot.telegram.model.UserProfile;
 import com.catchshop.PriceParser.apibot.telegram.model.ParseItem;
+import com.catchshop.PriceParser.apibot.telegram.model.UserProfile;
 import com.catchshop.PriceParser.apibot.telegram.util.ResultManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayDeque;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -72,14 +72,14 @@ public class UserRepository implements MainRepository {
     }
 
     @Override
-    public ArrayDeque<FavoriteItem> getAllItems(Long userId) {
+    public List<FavoriteItem> getAllItems(Long userId) {
         UserProfile userProfile = userProfilesDB.get(userId);
         return userProfile.getFavorites();
     }
 
     @Override
     public ParseItem getItem(Long userId, ParseItem parseItem) {
-        ArrayDeque<FavoriteItem> favorites = userProfilesDB.get(userId).getFavorites();
+        List<FavoriteItem> favorites = userProfilesDB.get(userId).getFavorites();
         if (favorites.contains(parseItem)) {
             return parseItem;
         }
@@ -95,7 +95,7 @@ public class UserRepository implements MainRepository {
     @Override
     public void deleteItem(Long userId, ParseItem parseItem) {
         UserProfile userProfile = userProfilesDB.get(userId);
-        ArrayDeque<FavoriteItem> favorites = userProfile.getFavorites();
+        List<FavoriteItem> favorites = userProfile.getFavorites();
         favorites.remove(parseItem);
     }
 }
