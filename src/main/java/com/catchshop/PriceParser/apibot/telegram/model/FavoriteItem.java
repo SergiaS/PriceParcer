@@ -31,7 +31,7 @@ public class FavoriteItem extends Item {
         FavoriteItem favoriteItem1 = new FavoriteItem("Endura FS260 Pro Bib Shorts",
                 Shop.getExampleShop(ParsedShop.WIGGLE),
                 "https://www.wiggle.co.uk/endura-fs260-pro-bib-shorts-1",
-                new ItemOptions("Red", "Medium", new BigDecimal("110.30"),"In stock"));
+                new ItemOptions("Red", "Medium", new BigDecimal("105.82"),"In stock"));
         FavoriteItem favoriteItem2 = new FavoriteItem("Under Armour HeatGear Armour Short Sleeve Compression Tee",
                 Shop.getExampleShop(ParsedShop.WIGGLE),
                 "https://www.wiggle.co.uk/under-armour-heatgear-armour-short-sleeve-compression-tee-1",
@@ -88,5 +88,16 @@ public class FavoriteItem extends Item {
             }
         }
         return new FavoriteItem(target.getTitle(), target.getShop(), target.getUrl(), options);
+    }
+
+    @Override
+    public String toString() {
+        return "FavoriteItem{" +
+                "title='" + getTitle() +
+                ", shop=" + getShop() +
+                ", url='" + getUrl() +
+                ", options=" + getOptions() +
+                ", dateTimeUpdate=" + dateTimeUpdate +
+                '}';
     }
 }
