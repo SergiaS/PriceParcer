@@ -52,6 +52,9 @@ public class MenuKeyboardService {
                     "button.menu.language.english",
                     "button.menu.language.russian");
             keyboard.add(row);
+        } else if (botStatus.equals(BotStatus.SHOW_FAVORITES)) {
+            KeyboardRow row = keyboardRowsConstructor("button.menu.showParse", "button.menu.deleteFavoriteByNumber");
+            keyboard.add(row);
         }
 
         if (!botStatus.equals(BotStatus.SHOW_MENU)) {

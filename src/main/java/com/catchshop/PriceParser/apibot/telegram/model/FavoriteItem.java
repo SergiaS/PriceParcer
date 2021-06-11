@@ -28,10 +28,10 @@ public class FavoriteItem extends Item {
 
     public static List<FavoriteItem> fillDefaultFavorites() {
         List<FavoriteItem> list = new ArrayList<>();
-        FavoriteItem favoriteItem1 = new FavoriteItem("GripGrab Classic Low Cut Sock",
+        FavoriteItem favoriteItem1 = new FavoriteItem("Endura FS260 Pro Bib Shorts",
                 Shop.getExampleShop(ParsedShop.WIGGLE),
-                "https://www.wiggle.co.uk/gripgrab-classic-low-cut-sock",
-                new ItemOptions("Blue", "M", new BigDecimal("10.30"),"In stock"));
+                "https://www.wiggle.co.uk/endura-fs260-pro-bib-shorts-1",
+                new ItemOptions("Red", "Medium", new BigDecimal("105.82"),"In stock"));
         FavoriteItem favoriteItem2 = new FavoriteItem("Under Armour HeatGear Armour Short Sleeve Compression Tee",
                 Shop.getExampleShop(ParsedShop.WIGGLE),
                 "https://www.wiggle.co.uk/under-armour-heatgear-armour-short-sleeve-compression-tee-1",
@@ -42,11 +42,32 @@ public class FavoriteItem extends Item {
                 new ItemOptions("L (59-62cm)", new BigDecimal("150.83"),"Still 9 in stock"));
 
         list.add(favoriteItem1);
-        list.add(favoriteItem2);
         list.add(favoriteItem3);
+        list.add(favoriteItem2);
         return list;
     }
 
+    /** Simple converter from ParseItem to FavoriteItem
+     */
+    public static FavoriteItem convertToFavoriteItem(ParseItem item) {
+        String title = item.getTitle();
+        String url = item.getUrl();
+        Shop shop = item.getShop();
+
+        String group = item.getOptions().getGroup();
+        String size = item.getOptions().getSize();
+        String color = item.getOptions().getColor();
+        String status = item.getOptions().getStatus();
+        BigDecimal price = item.getOptions().getPrice();
+
+        if (group == null) {
+            return new FavoriteItem(title, shop, url, new ItemOptions(color, size, price, status));
+        }
+        return new FavoriteItem(title, shop, url, new ItemOptions(group, price, status));
+    }
+
+    /** Converter that needs FavoriteItem target with specific values
+     */
     public static FavoriteItem convertToFavoriteItem(ParseItem item, FavoriteItem target) {
         String group, color, size, status;
         BigDecimal price;
@@ -67,5 +88,16 @@ public class FavoriteItem extends Item {
             }
         }
         return new FavoriteItem(target.getTitle(), target.getShop(), target.getUrl(), options);
+    }
+
+    @Override
+    public String toString() {
+        return "FavoriteItem{" +
+                "title='" + getTitle() +
+                ", shop=" + getShop() +
+                ", url='" + getUrl() +
+                ", options=" + getOptions() +
+                ", dateTimeUpdate=" + dateTimeUpdate +
+                '}';
     }
 }

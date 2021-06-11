@@ -127,4 +127,12 @@ public class ShopHelper {
         return new Bike24Parser();
     }
 
+    public static String removeParameters(String url) {
+        int index = url.indexOf("?");
+        if (index > 0) {
+            return url.substring(0, index);
+        }
+        return url;
+    }
+
 }

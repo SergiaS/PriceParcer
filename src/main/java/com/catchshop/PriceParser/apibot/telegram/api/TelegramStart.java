@@ -1,10 +1,11 @@
 package com.catchshop.PriceParser.apibot.telegram.api;
 
 import com.catchshop.PriceParser.apibot.telegram.PriceParserTelegramBot;
+import com.catchshop.PriceParser.apibot.telegram.model.ParseItem;
 import com.catchshop.PriceParser.apibot.telegram.model.UserProfile;
 import com.catchshop.PriceParser.apibot.telegram.repository.UserRepository;
 import com.catchshop.PriceParser.apibot.telegram.service.LocaleMessageService;
-import com.catchshop.PriceParser.apibot.telegram.model.ParseItem;
+import com.catchshop.PriceParser.bike.model.ItemOptions;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -113,8 +114,11 @@ public class TelegramStart {
             }
         } else if (userRepositoryBotStatus == BotStatus.SHOW_PARSE_END) {
             botStatus = BotStatus.SHOW_PARSE;
-        } else if (inputMessage.equals(localeMessageService.getMessage("button.menu.showFavorites"))) {
-            botStatus = BotStatus.SHOW_FAVORITE;
+        } else if (userRepositoryBotStatus == BotStatus.SHOW_FAVORITES && inputMessage.equals(localeMessageService.getMessage("button.menu.deleteFavoriteByNumber")) ||
+        userRepositoryBotStatus == BotStatus.SHOW_FAVORITES_DELETE) {
+            botStatus = BotStatus.SHOW_FAVORITES_DELETE;
+        } else if (userRepositoryBotStatus == BotStatus.SHOW_FAVORITES || inputMessage.equals(localeMessageService.getMessage("button.menu.showFavorites"))) {
+            botStatus = BotStatus.SHOW_FAVORITES;
         } else if (inputMessage.equals(localeMessageService.getMessage("button.menu.showLanguages"))) {
             botStatus = BotStatus.SHOW_LANGUAGES;
         } // changing locale
@@ -149,8 +153,21 @@ public class TelegramStart {
             tmpParsedParseItem.getOptions().setColor(userChoice);
         } else if (botStatus.equals(BotStatus.ASK_SIZE)) {
             tmpParsedParseItem.getOptions().setSize(userChoice);
+            for (ItemOptions itemOptions : tmpParsedParseItem.getItemOptionsList()) {
+                if (itemOptions.getColor().equals(tmpParsedParseItem.getOptions().getColor()) &&
+                        itemOptions.getSize().equals(tmpParsedParseItem.getOptions().getSize())) {
+                    tmpParsedParseItem.getOptions().setStatus(itemOptions.getStatus());
+                    tmpParsedParseItem.getOptions().setPrice(itemOptions.getPrice());
+                }
+            }
         } else if (botStatus.equals(BotStatus.ASK_GROUP)) {
             tmpParsedParseItem.getOptions().setGroup(userChoice);
+            for (ItemOptions itemOptions : tmpParsedParseItem.getItemOptionsList()) {
+                if (itemOptions.getGroup().equals(tmpParsedParseItem.getOptions().getGroup())) {
+                    tmpParsedParseItem.getOptions().setStatus(itemOptions.getStatus());
+                    tmpParsedParseItem.getOptions().setPrice(itemOptions.getPrice());
+                }
+            }
         }
         userProfile.setTmpParsedItem(tmpParsedParseItem);
         userRepository.saveUserProfile(userId, userProfile);

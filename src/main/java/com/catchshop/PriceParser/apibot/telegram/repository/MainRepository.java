@@ -2,10 +2,10 @@ package com.catchshop.PriceParser.apibot.telegram.repository;
 
 import com.catchshop.PriceParser.apibot.telegram.api.BotStatus;
 import com.catchshop.PriceParser.apibot.telegram.model.FavoriteItem;
-import com.catchshop.PriceParser.apibot.telegram.model.UserProfile;
 import com.catchshop.PriceParser.apibot.telegram.model.ParseItem;
+import com.catchshop.PriceParser.apibot.telegram.model.UserProfile;
 
-import java.util.ArrayDeque;
+import java.util.List;
 
 public interface MainRepository {
 
@@ -22,7 +22,7 @@ public interface MainRepository {
     void setLocaleProfile(Long userId, String locale);
 
 
-    ArrayDeque<FavoriteItem> getAllItems(Long userId);
+    List<FavoriteItem> getAllItems(Long userId);
 
     ParseItem getItem(Long userId, ParseItem parseItem);
 

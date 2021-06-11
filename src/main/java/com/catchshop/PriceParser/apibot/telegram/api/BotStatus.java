@@ -6,7 +6,8 @@ package com.catchshop.PriceParser.apibot.telegram.api;
 public enum BotStatus {
     SHOW_MENU,
     SHOW_SEARCH,
-    SHOW_FAVORITE,
+    SHOW_FAVORITES,
+        SHOW_FAVORITES_DELETE,
     SHOW_LANGUAGES,
     SHOW_ERROR,
 

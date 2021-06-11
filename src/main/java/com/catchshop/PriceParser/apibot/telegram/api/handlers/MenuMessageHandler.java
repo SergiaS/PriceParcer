@@ -26,6 +26,7 @@ public class MenuMessageHandler implements InputMessageHandler {
 
         SendMessage replyToUser;
         replyToUser = menuKeyboardService.getMenuMessage(chatId, localeMessageService.getMessage("reply.menu.showMenu"));
+        replyToUser.setReplyMarkup(menuKeyboardService.getMenuKeyboard(Long.valueOf(chatId)));
         return replyToUser;
     }
 

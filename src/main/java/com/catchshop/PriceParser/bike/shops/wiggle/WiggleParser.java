@@ -1,7 +1,7 @@
 package com.catchshop.PriceParser.bike.shops.wiggle;
 
-import com.catchshop.PriceParser.bike.enums.ParsedShop;
 import com.catchshop.PriceParser.apibot.telegram.model.ParseItem;
+import com.catchshop.PriceParser.bike.enums.ParsedShop;
 import com.catchshop.PriceParser.bike.model.ItemOptions;
 import com.catchshop.PriceParser.bike.model.Shop;
 import com.catchshop.PriceParser.bike.shops.MainParser;
@@ -38,7 +38,7 @@ public class WiggleParser extends MainParser {
         WiggleParser wp = new WiggleParser();
         ShopHelper.printItems(wp.searcher("castelli gloves white"));
 
-//        ShopHelper.printItem(wp.parseItemInfo("https://www.wiggle.co.uk/castelli-arenberg-gel-2-cycling-gloves"), CURRENCY_SIGN);
+//        ShopHelper.printItem(wp.parseItemInfo("https://www.wiggle.co.uk/endura-fs260-pro-aerogel-mitts-1?sku=100460744&source=igodigital"));
     }
 
     public List<ParseItem> searcher(String textToSearch) {
@@ -73,6 +73,7 @@ public class WiggleParser extends MainParser {
     }
 
     public ParseItem parseItemInfo(String itemUrl) {
+        itemUrl = ShopHelper.removeParameters(itemUrl);
         ParseItem parseItem = null;
         try {
             Document doc = Jsoup.connect(itemUrl + "?" + CURRENCY + COUNTRY).get();
