@@ -58,7 +58,9 @@ public class ResultManager {
                 sendIfResultIsTooBig(chatId, result);
             }
         }
-        sendHtmlResultToTelegram(chatId, result.toString());
+        if (result.length() > 0) {
+            sendHtmlResultToTelegram(chatId, result.toString());
+        }
     }
 
     public SendMessage getFavoriteItemFormattedResult(String chatId, List<FavoriteItem> favorites) {
