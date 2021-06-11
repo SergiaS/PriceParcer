@@ -30,8 +30,8 @@ public class BotStatusContext {
             return messageHandlers.get(BotStatus.SHOW_SEARCH);
         } else if (isParseActions(currentStatus)) {
             return messageHandlers.get(BotStatus.SHOW_PARSE);
-        } else if (currentStatus.equals(BotStatus.SHOW_FAVORITE)) {
-            return messageHandlers.get(BotStatus.SHOW_FAVORITE);
+        } else if (isFavoritesAction(currentStatus)) {
+            return messageHandlers.get(BotStatus.SHOW_FAVORITES);
         } else if (currentStatus.equals(BotStatus.SHOW_LANGUAGES)) {
             return messageHandlers.get(BotStatus.SHOW_LANGUAGES);
         } else if (currentStatus.equals(BotStatus.SHOW_ERROR)) {
@@ -48,6 +48,16 @@ public class BotStatusContext {
             case ASK_SIZE:
             case ASK_GROUP:
             case ASK_TRACKING:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    private boolean isFavoritesAction(BotStatus currentState) {
+        switch (currentState) {
+            case SHOW_FAVORITES:
+            case SHOW_FAVORITES_DELETE:
                 return true;
             default:
                 return false;

@@ -114,8 +114,11 @@ public class TelegramStart {
             }
         } else if (userRepositoryBotStatus == BotStatus.SHOW_PARSE_END) {
             botStatus = BotStatus.SHOW_PARSE;
-        } else if (inputMessage.equals(localeMessageService.getMessage("button.menu.showFavorites"))) {
-            botStatus = BotStatus.SHOW_FAVORITE;
+        } else if (userRepositoryBotStatus == BotStatus.SHOW_FAVORITES && inputMessage.equals(localeMessageService.getMessage("button.menu.deleteFavoriteByNumber")) ||
+        userRepositoryBotStatus == BotStatus.SHOW_FAVORITES_DELETE) {
+            botStatus = BotStatus.SHOW_FAVORITES_DELETE;
+        } else if (userRepositoryBotStatus == BotStatus.SHOW_FAVORITES || inputMessage.equals(localeMessageService.getMessage("button.menu.showFavorites"))) {
+            botStatus = BotStatus.SHOW_FAVORITES;
         } else if (inputMessage.equals(localeMessageService.getMessage("button.menu.showLanguages"))) {
             botStatus = BotStatus.SHOW_LANGUAGES;
         } // changing locale

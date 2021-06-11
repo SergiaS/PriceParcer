@@ -37,7 +37,7 @@ public class ResultManager {
 
         addOptions(parseItem, result);
 
-        sendResultToTelegram(chatId, result.toString());
+        sendHtmlResultToTelegram(chatId, result.toString());
     }
 
     public void sendParseItemFormattedResults(String chatId, List<ParseItem> parseItemList) {
@@ -55,16 +55,13 @@ public class ResultManager {
 
                 addOptions(parseItem, result);
 
-                if (result.length() > 3000) {
-                    sendResultToTelegram(chatId, result.toString());
-                    result.setLength(0);
-                }
+                sendIfResultIsTooBig(chatId, result);
             }
         }
-        sendResultToTelegram(chatId, result.toString());
+        sendHtmlResultToTelegram(chatId, result.toString());
     }
 
-    public void sendFavoriteItemFormattedResult(String chatId, List<FavoriteItem> favorites) {
+    public SendMessage getFavoriteItemFormattedResult(String chatId, List<FavoriteItem> favorites) {
         log.info("FavoriteItem formatted results. Total № of items: {}", favorites.size());
 
         StringBuilder result = new StringBuilder(localeMessageService.getMessage("reply.menu.showFavorites"));
@@ -73,8 +70,8 @@ public class ResultManager {
 
         int count = 1;
         for (FavoriteItem favoriteItem : favorites) {
-            result.append("\uD83D\uDCCC ").append("<u>").append(count++).append(" :: ").append(favoriteItem.getShop().getName()).append(" <a href=\"").append(favoriteItem.getUrl()).append("\">").append(favoriteItem.getTitle())
-                    .append("</a></u>").append("\n").append("\uD83E\uDDED ").append(favoriteItem.getShop().getChosenCurrency()).append(favoriteItem.getOptions().getPrice()).append(", ");
+            result.append("\uD83D\uDCCC ").append(count++).append(" :: ").append(favoriteItem.getShop().getName()).append(" <a href=\"").append(favoriteItem.getUrl()).append("\">").append(favoriteItem.getTitle())
+                    .append("</a>").append("\n").append("\uD83E\uDDED ").append(favoriteItem.getShop().getChosenCurrency()).append(favoriteItem.getOptions().getPrice()).append(", ");
 
             if (favoriteItem.getOptions().getGroup() != null) {
                 result.append(favoriteItem.getOptions().getGroup());
@@ -82,8 +79,20 @@ public class ResultManager {
                 result.append(favoriteItem.getOptions().getColor()).append(", ").append(favoriteItem.getOptions().getSize());
             }
             result.append(", ").append(favoriteItem.getOptions().getStatus()).append("\n").append("\n");
+
+            sendIfResultIsTooBig(chatId, result);
         }
-        sendResultToTelegram(chatId, result.toString());
+        SendMessage message = new SendMessage(chatId, result.toString());
+        message.enableHtml(true);
+        message.setDisableWebPagePreview(true);
+        return message;
+    }
+
+    private void sendIfResultIsTooBig(String chatId, StringBuilder result) {
+        if (result.length() > 3000) {
+            sendHtmlResultToTelegram(chatId, result.toString());
+            result.setLength(0);
+        }
     }
 
     private void addOptions(ParseItem parseItem, StringBuilder result) {
@@ -103,7 +112,7 @@ public class ResultManager {
         }
     }
 
-    private void sendResultToTelegram(String chatId, String result) {
+    public void sendHtmlResultToTelegram(String chatId, String result) {
         SendMessage resMsg = new SendMessage(chatId, result);
         resMsg.enableHtml(true);
         resMsg.setDisableWebPagePreview(true);
@@ -141,7 +150,7 @@ public class ResultManager {
                                 newItem.getShop().getChosenCurrency() + newItem.getOptions().getPrice(),
                                 newItem.getOptions().getGroup() != null ? newItem.getOptions().getGroup() : newItem.getOptions().getSize() + ", " + newItem.getOptions().getColor(),
                                 newItem.getOptions().getStatus()));
-                sendResultToTelegram(chatId, result.toString());
+                sendHtmlResultToTelegram(chatId, result.toString());
             } else {
                 result.append("❌ ").append(newItem.getTitle());
             }
