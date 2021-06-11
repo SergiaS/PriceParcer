@@ -47,19 +47,22 @@ public class UserProfile {
     private Function<ScheduledExecutorService, Void> startScheduler() {
 
         return (executorService -> {
-           executorService.scheduleWithFixedDelay(() -> {
-               if (favorites.size() == 0) {
-                   System.out.println("list of user favorites is empty - shutdown!");
-                   executorService.shutdown();
-               }
-               for (FavoriteItem favoriteItem : favorites) {
-                   MainParser shopParser = ShopHelper.storeIdentifier(favoriteItem.getUrl());
-                   ParseItem newItem = shopParser.parseItemInfo(favoriteItem.getUrl());
-                   FavoriteItem newData = FavoriteItem.convertToFavoriteItem(newItem, favoriteItem);
+            executorService.scheduleWithFixedDelay(() -> {
+                if (favorites.size() == 0) {
+                    System.out.println("list of user favorites is empty - shutdown!");
+                    executorService.shutdown();
+                }
+                List<FavoriteItem> updFavorites = new ArrayList<>();
+                for (FavoriteItem oldData : favorites) {
+                    MainParser shopParser = ShopHelper.storeIdentifier(oldData.getUrl());
+                    ParseItem newItem = shopParser.parseItemInfo(oldData.getUrl());
+                    FavoriteItem newData = FavoriteItem.convertToFavoriteItem(newItem, oldData);
 
-                   resultManager.notifyIfItemUpdated(chatId.toString(), favoriteItem, newData);
-               }
-           }, 0, updateTime, TimeUnit.MINUTES);
+                    resultManager.notifyIfItemUpdated(chatId.toString(), oldData, newData);
+                    updFavorites.add(newData);
+                }
+                favorites = updFavorites;
+            }, 0, updateTime, TimeUnit.SECONDS);
             return null;
         });
     }
