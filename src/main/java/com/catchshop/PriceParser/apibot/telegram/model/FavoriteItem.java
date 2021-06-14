@@ -13,8 +13,9 @@ public class FavoriteItem extends Item {
 
     private LocalDateTime dateTimeUpdate;
 
-    public FavoriteItem(String TITLE, Shop SHOP, String URL, ItemOptions OPTIONS) {
-        super(TITLE, SHOP, URL, OPTIONS);
+    public FavoriteItem(String title, Shop shop, String url, ItemOptions options) {
+        super(title, shop, url, options);
+//        System.out.println(" @ FavoriteItem @");
         this.dateTimeUpdate = LocalDateTime.now().withNano(0);
     }
 

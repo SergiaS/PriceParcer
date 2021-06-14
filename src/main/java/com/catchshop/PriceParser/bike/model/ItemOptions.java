@@ -1,5 +1,7 @@
 package com.catchshop.PriceParser.bike.model;
 
+import org.springframework.data.annotation.PersistenceConstructor;
+
 import java.math.BigDecimal;
 import java.util.Objects;
 
@@ -10,6 +12,7 @@ public class ItemOptions {
     private BigDecimal price;
     private String status;
 
+    @PersistenceConstructor
     public ItemOptions(String group, BigDecimal price, String status) {
         this.group = group;
         this.price = price;

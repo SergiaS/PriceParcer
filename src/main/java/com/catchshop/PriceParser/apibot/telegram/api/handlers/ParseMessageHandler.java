@@ -4,13 +4,13 @@ import com.catchshop.PriceParser.apibot.telegram.PriceParserTelegramBot;
 import com.catchshop.PriceParser.apibot.telegram.api.BotStatus;
 import com.catchshop.PriceParser.apibot.telegram.api.InputMessageHandler;
 import com.catchshop.PriceParser.apibot.telegram.model.FavoriteItem;
+import com.catchshop.PriceParser.apibot.telegram.model.ParseItem;
 import com.catchshop.PriceParser.apibot.telegram.model.UserProfile;
-import com.catchshop.PriceParser.apibot.telegram.repository.UserRepository;
 import com.catchshop.PriceParser.apibot.telegram.service.LocaleMessageService;
 import com.catchshop.PriceParser.apibot.telegram.service.MenuKeyboardService;
 import com.catchshop.PriceParser.apibot.telegram.service.ReplyMessageService;
+import com.catchshop.PriceParser.apibot.telegram.service.UserProfileService;
 import com.catchshop.PriceParser.apibot.telegram.util.ResultManager;
-import com.catchshop.PriceParser.apibot.telegram.model.ParseItem;
 import com.catchshop.PriceParser.bike.model.ItemOptions;
 import com.catchshop.PriceParser.bike.shops.bike24.Bike24Parser;
 import com.catchshop.PriceParser.bike.shops.wiggle.WiggleParser;
@@ -33,17 +33,17 @@ public class ParseMessageHandler implements InputMessageHandler {
     private final LocaleMessageService localeMessageService;
     private final ReplyMessageService replyMessageService;
     private final PriceParserTelegramBot telegramBot;
-    private final UserRepository userRepository;
+    private final UserProfileService userProfileService;
     private final ResultManager resultManager;
     private final List<String> urlShopsList;
 
     @Autowired
-    public ParseMessageHandler(LocaleMessageService localeMessageService, ReplyMessageService replyMessageService, @Lazy PriceParserTelegramBot telegramBot, MenuKeyboardService menuKeyboardService, UserRepository userRepository, ResultManager resultManager) {
+    public ParseMessageHandler(LocaleMessageService localeMessageService, ReplyMessageService replyMessageService, @Lazy PriceParserTelegramBot telegramBot, MenuKeyboardService menuKeyboardService, UserProfileService userProfileService, ResultManager resultManager) {
         this.localeMessageService = localeMessageService;
         this.replyMessageService = replyMessageService;
         this.telegramBot = telegramBot;
         this.menuKeyboardService = menuKeyboardService;
-        this.userRepository = userRepository;
+        this.userProfileService = userProfileService;
         this.resultManager = resultManager;
 
         this.urlShopsList = new ArrayList<>();
@@ -54,30 +54,29 @@ public class ParseMessageHandler implements InputMessageHandler {
     @Override
     public SendMessage handle(Message inputMessage) {
         String userMsg = inputMessage.getText();
-        String chatId = inputMessage.getChatId().toString();
-        Long userId = inputMessage.getFrom().getId();
+        Long chatId = inputMessage.getChatId();
 
         SendMessage replyToUser = new SendMessage();
-        replyToUser.setChatId(chatId);
+        replyToUser.setChatId(chatId.toString());
         replyToUser.disableWebPagePreview();
         replyToUser.enableHtml(true);
 
-        mainParseAction(userId, chatId, replyToUser, userMsg);
+        mainParseAction(chatId, replyToUser, userMsg);
 
-        tmpParsedItemAction(userId, chatId, replyToUser);
+        tmpParsedItemAction(chatId, replyToUser);
 
         return replyToUser;
     }
 
-    private void mainParseAction(Long userId, String chatId, SendMessage replyToUser, String userMsg) {
-        BotStatus botStatus = userRepository.getUserProfile(userId).getBotStatus();
-        UserProfile userProfile = userRepository.getUserProfile(userId);
+    private void mainParseAction(Long chatId, SendMessage replyToUser, String userMsg) {
+        UserProfile userProfile = userProfileService.getUserProfileData(chatId);
+        BotStatus botStatus = userProfile.getBotStatus();
         if (botStatus.equals(BotStatus.SHOW_PARSE)) {
             if (userMsg.equals(localeMessageService.getMessage("button.menu.showParse"))) {
-                replyToUser.setReplyMarkup(menuKeyboardService.getMenuKeyboard(Long.valueOf(chatId)));
+                replyToUser.setReplyMarkup(menuKeyboardService.getMenuKeyboard(chatId));
                 replyToUser.setText(String.format(localeMessageService.getMessage("reply.menu.showParse"), showListOfShops()));
             } else if (isBikeShopUrl(userMsg)) {
-                telegramBot.sendMessage(replyMessageService.getReplyMessage(chatId, "reply.parse.start"));
+                telegramBot.sendMessage(replyMessageService.getReplyMessage(chatId.toString(), "reply.parse.start"));
 
                 ParseItem parseItemInfo = null;
                 if (userMsg.contains("wiggle")) {
@@ -92,7 +91,7 @@ public class ParseMessageHandler implements InputMessageHandler {
                     replyToUser.setText(localeMessageService.getMessage("reply.notFound"));
                     botStatus = BotStatus.SHOW_PARSE_END;
                 } else {
-                    resultManager.showItemFormattedResults(chatId, parseItemInfo);
+                    resultManager.showItemFormattedResults(chatId.toString(), parseItemInfo);
 
                     ItemOptions itemOptions = parseItemInfo.getItemOptionsList().get(0);
                     if (itemOptions.getGroup() != null) {
@@ -105,15 +104,15 @@ public class ParseMessageHandler implements InputMessageHandler {
                     userProfile.setTmpParsedItem(parseItemInfo);
                 }
                 userProfile.setBotStatus(botStatus);
-                userRepository.saveUserProfile(userId, userProfile);
+                userProfileService.saveUserProfile(userProfile);
             } else {
                 replyToUser.setText(localeMessageService.getMessage("reply.parse.error"));
             }
         }
     }
 
-    private void tmpParsedItemAction(Long userId, String chatId, SendMessage replyToUser) {
-        UserProfile userProfile = userRepository.getUserProfile(userId);
+    private void tmpParsedItemAction(Long chatId, SendMessage replyToUser) {
+        UserProfile userProfile = userProfileService.getUserProfileData(chatId);
         ParseItem tmpParsedParseItem = userProfile.getTmpParsedItem();
         BotStatus botStatus = userProfile.getBotStatus();
         if (isFillingItem(botStatus)) {
@@ -136,14 +135,13 @@ public class ParseMessageHandler implements InputMessageHandler {
             userProfile.setBotStatus(BotStatus.SHOW_MENU);
             if (tmpParsedParseItem != null) {
                 String result = String.format(localeMessageService.getMessage("reply.parse.end"), getItemNameWithOptions(tmpParsedParseItem));
-                replyToUser.setReplyMarkup(menuKeyboardService.getMenuKeyboard(Long.valueOf(chatId)));
+                replyToUser.setReplyMarkup(menuKeyboardService.getMenuKeyboard(chatId));
                 replyToUser.setText(result);
 
                 userProfile.getFavorites().add(FavoriteItem.convertToFavoriteItem(tmpParsedParseItem));
-                tmpParsedParseItem = null;
-                userProfile.setTmpParsedItem(tmpParsedParseItem);
+                userProfile.setTmpParsedItem(null);
             }
-            userRepository.saveUserProfile(userId, userProfile);
+            userProfileService.saveUserProfile(userProfile);
         }
     }
 

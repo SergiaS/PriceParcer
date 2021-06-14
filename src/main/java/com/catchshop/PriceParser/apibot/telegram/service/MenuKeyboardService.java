@@ -1,7 +1,7 @@
 package com.catchshop.PriceParser.apibot.telegram.service;
 
 import com.catchshop.PriceParser.apibot.telegram.api.BotStatus;
-import com.catchshop.PriceParser.apibot.telegram.repository.UserRepository;
+import com.catchshop.PriceParser.apibot.telegram.model.UserProfile;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -15,12 +15,12 @@ import java.util.List;
 @Service
 public class MenuKeyboardService {
     private final LocaleMessageService localeMessageService;
-    private final UserRepository userRepository;
+    private final UserProfileService userProfileService;
 
     @Autowired
-    public MenuKeyboardService(LocaleMessageService localeMessageService, UserRepository userRepository) {
+    public MenuKeyboardService(LocaleMessageService localeMessageService, UserProfileService userProfileService) {
         this.localeMessageService = localeMessageService;
-        this.userRepository = userRepository;
+        this.userProfileService = userProfileService;
     }
 
     public SendMessage getMenuMessage(String chatId, String userMsg) {
@@ -30,7 +30,8 @@ public class MenuKeyboardService {
 
     public ReplyKeyboardMarkup getMenuKeyboard(Long chatId) {
         List<KeyboardRow> keyboard = new ArrayList<>();
-        BotStatus botStatus = userRepository.getBotStatus(chatId);
+        UserProfile userProfile = userProfileService.getUserProfileData(chatId);
+        BotStatus botStatus = userProfile.getBotStatus();
 
         if (botStatus.equals(BotStatus.SHOW_MENU)) {
             // search and parse buttons in one row

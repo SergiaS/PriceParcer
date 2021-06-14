@@ -2,6 +2,7 @@ package com.catchshop.PriceParser.apibot.telegram.model;
 
 import com.catchshop.PriceParser.bike.model.ItemOptions;
 import com.catchshop.PriceParser.bike.model.Shop;
+import org.springframework.data.annotation.PersistenceConstructor;
 
 import java.util.List;
 import java.util.Objects;
@@ -10,15 +11,16 @@ public class ParseItem extends Item {
     private final List<ItemOptions> itemOptionsList;
     private final String rangePrice;
 
-    public ParseItem(String TITLE, Shop SHOP, String URL, ItemOptions OPTIONS, String rangePrice) {
-        super(TITLE, SHOP, URL, OPTIONS);
-        this.itemOptionsList = null;
+    @PersistenceConstructor
+    public ParseItem(String title, Shop shop, String url, List<ItemOptions> itemOptionsList, String rangePrice) {
+        super(title, shop, url, null);
+        this.itemOptionsList = itemOptionsList;
         this.rangePrice = rangePrice;
     }
 
-    public ParseItem(String TITLE, Shop SHOP, String URL, List<ItemOptions> itemOptionsList, String rangePrice) {
-        super(TITLE, SHOP, URL, null);
-        this.itemOptionsList = itemOptionsList;
+    public ParseItem(String title, Shop shop, String url, ItemOptions options, String rangePrice) {
+        super(title, shop, url, options);
+        this.itemOptionsList = null;
         this.rangePrice = rangePrice;
     }
 
