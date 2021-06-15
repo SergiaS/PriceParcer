@@ -102,13 +102,13 @@ public class ResultManager {
             result.append("<b>").append(parseItem.getShop().getChosenCurrency()).append(options.getPrice()).append("</b>");
             if (options.getColor() == null) {
                 result
-                        .append(options.getGroup() == null ? "" : ", " + options.getGroup())
-                        .append(options.getStatus() == null ? "" : ", " + options.getStatus());
+                        .append(options.getGroup() == null || options.getGroup().isBlank() ? "" : ", " + options.getGroup())
+                        .append(options.getStatus() == null || options.getStatus().isBlank() ? "" : ", " + options.getStatus());
             } else {
                 result
-                        .append(options.getColor() == null ? "" : ", " + options.getColor())
-                        .append(options.getSize() == null ? "" : ", " + options.getSize())
-                        .append(options.getStatus() == null ? "" : ", " + options.getStatus());
+                        .append(options.getColor() == null || options.getColor().isBlank() ? "" : ", " + options.getColor())
+                        .append(options.getSize() == null || options.getSize().isBlank() ? "" : ", " + options.getSize())
+                        .append(options.getStatus() == null || options.getStatus().isBlank() ? "" : ", " + options.getStatus());
             }
             result.append("\n");
         }

@@ -12,7 +12,7 @@ import java.util.Map;
 @Component
 public class BotStatusContext {
 
-    private Map<BotStatus, InputMessageHandler> messageHandlers = new HashMap<>();
+    private final Map<BotStatus, InputMessageHandler> messageHandlers = new HashMap<>();
 
     @Autowired
     public BotStatusContext(List<InputMessageHandler> messageHandlers) {

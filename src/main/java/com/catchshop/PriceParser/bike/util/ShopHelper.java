@@ -91,17 +91,17 @@ public class ShopHelper {
                 String status = options.getStatus();
 
                 System.out.println(currency + price +
-                        (group == null ? "" : ", " + group) +
-                        (status == null ? "" : ", " + status));
+                        (group == null || group.isBlank() ? "" : ", " + group) +
+                        (status == null || status.isBlank() ? "" : ", " + status));
             } else {
                 String size = options.getSize();
                 String color = options.getColor();
                 BigDecimal price = options.getPrice();
                 String status = options.getStatus();
                 System.out.println(currency + price +
-                        (color == null ? "" : ", " + color) +
-                        (size == null ? "" : ", " + size) +
-                        (status == null ? "" : ", [" + status + "]"));
+                        (color == null || color.isBlank() ? "" : ", " + color) +
+                        (size == null || size.isBlank() ? "" : ", " + size) +
+                        (status == null || status.isBlank() ? "" : ", [" + status + "]"));
             }
         }
         System.out.println();

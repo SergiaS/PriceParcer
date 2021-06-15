@@ -12,6 +12,11 @@ public class ItemOptions {
     private BigDecimal price;
     private String status;
 
+    public ItemOptions( BigDecimal price, String status) {
+        this.price = price;
+        this.status = status;
+    }
+
     @PersistenceConstructor
     public ItemOptions(String group, BigDecimal price, String status) {
         this.group = group;

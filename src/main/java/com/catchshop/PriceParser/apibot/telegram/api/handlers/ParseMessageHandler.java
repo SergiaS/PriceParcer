@@ -12,8 +12,8 @@ import com.catchshop.PriceParser.apibot.telegram.service.ReplyMessageService;
 import com.catchshop.PriceParser.apibot.telegram.service.UserProfileService;
 import com.catchshop.PriceParser.apibot.telegram.util.ResultManager;
 import com.catchshop.PriceParser.bike.model.ItemOptions;
-import com.catchshop.PriceParser.bike.shops.bike24.Bike24Parser;
-import com.catchshop.PriceParser.bike.shops.wiggle.WiggleParser;
+import com.catchshop.PriceParser.bike.shops.MainParser;
+import com.catchshop.PriceParser.bike.util.ShopHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
@@ -78,14 +78,9 @@ public class ParseMessageHandler implements InputMessageHandler {
             } else if (isBikeShopUrl(userMsg)) {
                 telegramBot.sendMessage(replyMessageService.getReplyMessage(chatId.toString(), "reply.parse.start"));
 
-                ParseItem parseItemInfo = null;
-                if (userMsg.contains("wiggle")) {
-                    WiggleParser wiggleParser = new WiggleParser();
-                    parseItemInfo = wiggleParser.parseItemInfo(userMsg);
-                } else if (userMsg.contains("bike24")) {
-                    Bike24Parser bike24Parser = new Bike24Parser();
-                    parseItemInfo = bike24Parser.parseItemInfo(userMsg);
-                }
+                ParseItem parseItemInfo;
+                MainParser parser = ShopHelper.storeIdentifier(userMsg);
+                parseItemInfo = parser.parseItemInfo(userMsg);
 
                 if (parseItemInfo == null) {
                     replyToUser.setText(localeMessageService.getMessage("reply.notFound"));
@@ -94,7 +89,11 @@ public class ParseMessageHandler implements InputMessageHandler {
                     resultManager.showItemFormattedResults(chatId.toString(), parseItemInfo);
 
                     ItemOptions itemOptions = parseItemInfo.getItemOptionsList().get(0);
-                    if (itemOptions.getGroup() != null) {
+
+                    // if there is only one variation of item - suggest to save it
+                    if (parseItemInfo.getItemOptionsList().size() == 1) {
+                        botStatus = BotStatus.ASK_TRACKING;
+                    } else if (itemOptions.getGroup() != null) {
                         botStatus = BotStatus.ASK_GROUP;
                     } else if (itemOptions.getColor() != null) {
                         botStatus = BotStatus.ASK_COLOR;
