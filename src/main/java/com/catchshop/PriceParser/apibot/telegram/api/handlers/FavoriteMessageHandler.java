@@ -44,7 +44,7 @@ public class FavoriteMessageHandler implements InputMessageHandler {
 
         List<FavoriteItem> allItems = userProfile.getFavorites();
         if (botStatus.equals(BotStatus.SHOW_FAVORITES)) {
-            replyToUser = allItemsAnswer(chatId, allItems);
+            replyToUser = getAllItems(chatId, allItems);
         } else if (botStatus.equals(BotStatus.SHOW_FAVORITES_DELETE)) {
             if (text.equals(localeMessageService.getMessage("button.menu.deleteFavoriteByNumber"))) {
                 replyToUser = replyMessageService.getReplyMessage(chatId.toString(), "reply.favorites.deleteFavoriteByNumber");
@@ -61,7 +61,7 @@ public class FavoriteMessageHandler implements InputMessageHandler {
                     userProfile.setFavorites(allItems);
                     userProfileService.saveUserProfile(userProfile);
 
-                    replyToUser = allItemsAnswer(chatId, allItems);
+                    replyToUser = getAllItems(chatId, allItems);
                 } else {
                     replyToUser = replyMessageService.getReplyMessage(chatId.toString(), "reply.favorites.removeError");
                 }
@@ -76,7 +76,7 @@ public class FavoriteMessageHandler implements InputMessageHandler {
         return text.matches("\\d+") && Integer.parseInt(text) <= allItems.size();
     }
 
-    private SendMessage allItemsAnswer(Long chatId, List<FavoriteItem> allItems) {
+    private SendMessage getAllItems(Long chatId, List<FavoriteItem> allItems) {
         SendMessage replyToUser;
         UserProfile userProfile = userProfileService.getUserProfileData(chatId);
         if (allItems.size() == 0) {

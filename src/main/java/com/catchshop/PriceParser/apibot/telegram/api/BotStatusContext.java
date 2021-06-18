@@ -43,10 +43,7 @@ public class BotStatusContext {
     private boolean isParseActions(BotStatus currentState) {
         switch (currentState) {
             case SHOW_PARSE:
-            case SHOW_PARSE_END:
-            case ASK_COLOR:
-            case ASK_SIZE:
-            case ASK_GROUP:
+            case FILLING_ITEM:
             case ASK_TRACKING:
                 return true;
             default:

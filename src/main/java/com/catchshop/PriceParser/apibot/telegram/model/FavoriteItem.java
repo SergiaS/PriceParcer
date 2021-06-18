@@ -5,26 +5,25 @@ import com.catchshop.PriceParser.bike.model.ItemOptions;
 import com.catchshop.PriceParser.bike.model.Shop;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 public class FavoriteItem extends Item {
 
-    private LocalDateTime dateTimeUpdate;
+    private ItemOptions options;
 
     public FavoriteItem(String title, Shop shop, String url, ItemOptions options) {
-        super(title, shop, url, options);
+        super(title, shop, url);
+        this.options = options;
 //        System.out.println(" @ FavoriteItem @");
-        this.dateTimeUpdate = LocalDateTime.now().withNano(0);
     }
 
-    public LocalDateTime getDateTimeUpdate() {
-        return dateTimeUpdate;
+    public ItemOptions getOptions() {
+        return options;
     }
 
-    public void setDateTimeUpdate(LocalDateTime dateTimeUpdate) {
-        this.dateTimeUpdate = dateTimeUpdate;
+    public void setOptions(ItemOptions options) {
+        this.options = options;
     }
 
     public static List<FavoriteItem> fillDefaultFavorites() {
@@ -49,47 +48,45 @@ public class FavoriteItem extends Item {
     }
 
     /** Simple converter from ParseItem to FavoriteItem
+     * when needs to save parsedItem into favorites - use it
      */
-    public static FavoriteItem convertToFavoriteItem(ParseItem item) {
-        String title = item.getTitle();
-        String url = item.getUrl();
-        Shop shop = item.getShop();
+    public static FavoriteItem convertToFavoriteItem(ParsedItem parsedItem) {
+        String title = parsedItem.getTitle();
+        String url = parsedItem.getUrl();
+        Shop shop = parsedItem.getShop();
 
-        String group = item.getOptions().getGroup();
-        String size = item.getOptions().getSize();
-        String color = item.getOptions().getColor();
-        String status = item.getOptions().getStatus();
-        BigDecimal price = item.getOptions().getPrice();
+        String group = parsedItem.getSelectedOptions().getGroup();
+        String color = parsedItem.getSelectedOptions().getColor();
+        String size = parsedItem.getSelectedOptions().getSize();
+        String status = parsedItem.getSelectedOptions().getStatus();
+        BigDecimal price = parsedItem.getSelectedOptions().getPrice();
 
-        if (group == null) {
-            return new FavoriteItem(title, shop, url, new ItemOptions(color, size, price, status));
-        }
-        return new FavoriteItem(title, shop, url, new ItemOptions(group, price, status));
+        return new FavoriteItem(title, shop, url, new ItemOptions(group, color, size, price, status));
     }
 
-    /** Converter that needs FavoriteItem target with specific values
-     */
-    public static FavoriteItem convertToFavoriteItem(ParseItem item, FavoriteItem target) {
-        String group, color, size, status;
-        BigDecimal price;
-        ItemOptions options = null;
-        for (ItemOptions itemOptions : item.getItemOptionsList()) {
-            if (itemOptions.getColor() != null && itemOptions.getColor().equals(target.getOptions().getColor()) &&
-                    itemOptions.getSize() != null && itemOptions.getSize().equals(target.getOptions().getSize())) {
-                color = itemOptions.getColor();
-                size = itemOptions.getSize();
-                price = itemOptions.getPrice();
-                status = itemOptions.getStatus();
-                options = new ItemOptions(color, size, price, status);
-            } else if (itemOptions.getGroup() != null && itemOptions.getGroup().equals(target.getOptions().getGroup())) {
-                group = itemOptions.getGroup();
-                price = itemOptions.getPrice();
-                status = itemOptions.getStatus();
-                options = new ItemOptions(group, price, status);
-            }
-        }
-        return new FavoriteItem(target.getTitle(), target.getShop(), target.getUrl(), options);
-    }
+//    /** Converter that needs FavoriteItem target with specific values
+//     */
+//    public static FavoriteItem convertToFavoriteItem(ParseItem item, FavoriteItem target) {
+//        String group, color, size, status;
+//        BigDecimal price;
+//        ItemOptions options = null;
+//        for (ItemOptions itemOptions : item.getItemOptionsList()) {
+//            if (itemOptions.getColor() != null && itemOptions.getColor().equals(target.getOptions().getColor()) &&
+//                    itemOptions.getSize() != null && itemOptions.getSize().equals(target.getOptions().getSize())) {
+//                color = itemOptions.getColor();
+//                size = itemOptions.getSize();
+//                price = itemOptions.getPrice();
+//                status = itemOptions.getStatus();
+//                options = new ItemOptions(color, size, price, status);
+//            } else if (itemOptions.getGroup() != null && itemOptions.getGroup().equals(target.getOptions().getGroup())) {
+//                group = itemOptions.getGroup();
+//                price = itemOptions.getPrice();
+//                status = itemOptions.getStatus();
+//                options = new ItemOptions(group, price, status);
+//            }
+//        }
+//        return new FavoriteItem(target.getTitle(), target.getShop(), target.getUrl(), options);
+//    }
 
     @Override
     public String toString() {
@@ -97,8 +94,6 @@ public class FavoriteItem extends Item {
                 "title='" + getTitle() +
                 ", shop=" + getShop() +
                 ", url='" + getUrl() +
-                ", options=" + getOptions() +
-                ", dateTimeUpdate=" + dateTimeUpdate +
                 '}';
     }
 }

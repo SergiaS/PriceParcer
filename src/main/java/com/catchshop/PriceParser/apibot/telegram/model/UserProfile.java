@@ -16,7 +16,6 @@ public class UserProfile {
 
     @Indexed(unique = true)
     private long chatId;
-    private ParseItem tmpParseItem;
     private List<FavoriteItem> favorites;
     private BotStatus botStatus;
     private String languageTag;
@@ -37,14 +36,6 @@ public class UserProfile {
 
     public void setChatId(long chatId) {
         this.chatId = chatId;
-    }
-
-    public ParseItem getTmpParsedItem() {
-        return tmpParseItem;
-    }
-
-    public void setTmpParsedItem(ParseItem tmpParsedParseItem) {
-        this.tmpParseItem = tmpParsedParseItem;
     }
 
     public List<FavoriteItem> getFavorites() {

@@ -6,18 +6,21 @@ import java.math.BigDecimal;
 import java.util.Objects;
 
 public class ItemOptions {
-    private String group; // comboField
+    private String group; // comboField/mixed
     private String color;
     private String size;
     private BigDecimal price;
     private String status;
 
-    public ItemOptions( BigDecimal price, String status) {
+    @PersistenceConstructor
+    public ItemOptions() {
+    }
+
+    public ItemOptions(BigDecimal price, String status) {
         this.price = price;
         this.status = status;
     }
 
-    @PersistenceConstructor
     public ItemOptions(String group, BigDecimal price, String status) {
         this.group = group;
         this.price = price;
