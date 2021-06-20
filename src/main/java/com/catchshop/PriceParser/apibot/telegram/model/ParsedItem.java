@@ -2,20 +2,14 @@ package com.catchshop.PriceParser.apibot.telegram.model;
 
 import com.catchshop.PriceParser.bike.model.ItemOptions;
 import com.catchshop.PriceParser.bike.model.Shop;
-import org.springframework.data.annotation.PersistenceConstructor;
 
 import java.util.List;
 import java.util.Objects;
 
 public class ParsedItem extends Item {
-    private List<ItemOptions> parsedOptionsList;
+    private final List<ItemOptions> parsedOptionsList;
     private ItemOptions selectedOptions;
-    private String rangePrice;
-
-    @PersistenceConstructor
-    public ParsedItem() {
-
-    }
+    private final String rangePrice;
 
     public ParsedItem(String title, Shop shop, String url, List<ItemOptions> parsedOptionsList, String rangePrice) {
         super(title, shop, url);
@@ -28,10 +22,6 @@ public class ParsedItem extends Item {
         return parsedOptionsList;
     }
 
-    public void setParsedOptionsList(List<ItemOptions> parsedOptionsList) {
-        this.parsedOptionsList = parsedOptionsList;
-    }
-
     public ItemOptions getSelectedOptions() {
         return selectedOptions;
     }
@@ -42,10 +32,6 @@ public class ParsedItem extends Item {
 
     public String getRangePrice() {
         return rangePrice;
-    }
-
-    public void setRangePrice(String rangePrice) {
-        this.rangePrice = rangePrice;
     }
 
     @Override

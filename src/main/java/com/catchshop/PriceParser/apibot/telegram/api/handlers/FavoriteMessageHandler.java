@@ -54,8 +54,15 @@ public class FavoriteMessageHandler implements InputMessageHandler {
                 // checks if entered number is exist in the list
                 int index = Integer.parseInt(text) - 1;
                 if (allItems.get(index) != null) {
-                    String deletedTitleItem = allItems.get(index).getTitle();
-                    resultManager.sendHtmlResultToTelegram(chatId.toString(), String.format(localeMessageService.getMessage("reply.favorites.removed"), deletedTitleItem));
+                    String title = allItems.get(index).getTitle();
+                    String group = allItems.get(index).getOptions().getGroup();
+                    String color = allItems.get(index).getOptions().getColor();
+                    String size = allItems.get(index).getOptions().getSize();
+                    StringBuilder deletingItem = new StringBuilder(title)
+                            .append(group == null ? "" : ", " + group)
+                            .append(color == null ? "" : ", " + color)
+                            .append(size == null ? "" : ", " + size);
+                    resultManager.sendHtmlResultToTelegram(chatId.toString(), String.format(localeMessageService.getMessage("reply.favorites.removed"), deletingItem));
 
                     allItems.remove(index);
                     userProfile.setFavorites(allItems);

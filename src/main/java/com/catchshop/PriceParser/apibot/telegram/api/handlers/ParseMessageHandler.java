@@ -136,6 +136,8 @@ public class ParseMessageHandler implements InputMessageHandler {
                 userProfileService.saveUserProfile(userProfile);
                 replyToUser.setText(localeMessageService.getMessage("reply.menu.showMenu"));
                 replyToUser.setReplyMarkup(menuKeyboardService.getMenuKeyboard(chatId));
+
+                cachedParsedResult.removeParsedItem(chatId);
             } else {
                 telegramBot.sendMessage(replyMessageService.getReplyMessage(chatId.toString(), "reply.parse.wrongOption"));
                 askToSelectOption(chatId, replyToUser);

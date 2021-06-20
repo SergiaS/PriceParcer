@@ -1,6 +1,7 @@
 package com.catchshop.PriceParser.apibot.telegram.api;
 
 import com.catchshop.PriceParser.apibot.telegram.model.UserProfile;
+import com.catchshop.PriceParser.apibot.telegram.repository.CachedParsedResult;
 import com.catchshop.PriceParser.apibot.telegram.service.LocaleMessageService;
 import com.catchshop.PriceParser.apibot.telegram.service.UserProfileService;
 import lombok.extern.slf4j.Slf4j;
@@ -17,12 +18,14 @@ public class TelegramStart {
     private final BotStatusContext botStatusContext;
     private final UserProfileService userProfileService;
     private final LocaleMessageService localeMessageService;
+    private final CachedParsedResult cachedParsedResult;
 
     @Autowired
-    public TelegramStart(BotStatusContext botStatusContext, UserProfileService userProfileService, LocaleMessageService localeMessageService) {
+    public TelegramStart(BotStatusContext botStatusContext, UserProfileService userProfileService, LocaleMessageService localeMessageService, CachedParsedResult cachedParsedResult) {
         this.botStatusContext = botStatusContext;
         this.userProfileService = userProfileService;
         this.localeMessageService = localeMessageService;
+        this.cachedParsedResult = cachedParsedResult;
     }
 
     public BotApiMethod<?> handleUpdate(Update update) {
@@ -101,8 +104,22 @@ public class TelegramStart {
             botStatus = BotStatus.SHOW_ERROR;
             System.out.println("BOOM in TelegramStart");
         }
+
+        if (profileBotStatus == BotStatus.FILLING_ITEM && isNeedToClean(botStatus)) {
+            cachedParsedResult.removeParsedItem(chatId);
+        }
         userProfile.setBotStatus(botStatus);
         userProfileService.saveUserProfile(userProfile);
         return botStatusContext.processInputMessage(botStatus, message);
+    }
+
+    private boolean isNeedToClean(BotStatus botStatus) {
+        switch (botStatus) {
+            case FILLING_ITEM:
+            case ASK_TRACKING:
+                return false;
+            default:
+                return true;
+        }
     }
 }

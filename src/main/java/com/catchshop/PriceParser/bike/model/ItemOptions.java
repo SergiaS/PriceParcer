@@ -34,6 +34,14 @@ public class ItemOptions {
         this.status = status;
     }
 
+    public ItemOptions(String group, String color, String size, BigDecimal price, String status) {
+        this.group = group;
+        this.color = color;
+        this.size = size;
+        this.price = price;
+        this.status = status;
+    }
+
     public String getGroup() {
         return group;
     }
