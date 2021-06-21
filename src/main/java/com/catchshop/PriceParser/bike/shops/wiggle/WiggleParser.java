@@ -1,6 +1,6 @@
 package com.catchshop.PriceParser.bike.shops.wiggle;
 
-import com.catchshop.PriceParser.apibot.telegram.model.ParseItem;
+import com.catchshop.PriceParser.apibot.telegram.model.ParsedItem;
 import com.catchshop.PriceParser.bike.enums.ParsedShop;
 import com.catchshop.PriceParser.bike.model.ItemOptions;
 import com.catchshop.PriceParser.bike.model.Shop;
@@ -20,7 +20,7 @@ import java.util.List;
 /**
  * Can parse first 48 positions (first page) and specific position by url of Wiggle.
  * Returns sorted result - positions by price and their options by price and color.
- *
+ * <p>
  * Restricted to 25 items! Too long message (for example hit "Five Ten Freeride")
  */
 
@@ -36,12 +36,12 @@ public class WiggleParser extends MainParser {
 
     public static void main(String[] args) {
         WiggleParser wp = new WiggleParser();
-        ShopHelper.printItems(wp.searcher("castelli gloves white"));
+//        ShopHelper.printItems(wp.searcher("castelli gloves white"));
 
-//        ShopHelper.printItem(wp.parseItemInfo("https://www.wiggle.co.uk/endura-fs260-pro-aerogel-mitts-1?sku=100460744&source=igodigital"));
+        ShopHelper.printItem(wp.parseItemInfo("https://www.wiggle.co.uk/muc-off-bike-cleaner-concentrate-500ml"));
     }
 
-    public List<ParseItem> searcher(String textToSearch) {
+    public List<ParsedItem> searcher(String textToSearch) {
         String catalogItemsUrl = SITE +
                 textToSearch.replace(" ", "+") +
                 SORT_BY +
@@ -49,7 +49,7 @@ public class WiggleParser extends MainParser {
                 "&" + CURRENCY +
                 COUNTRY;
 
-        List<ParseItem> itemsList = new ArrayList<>();
+        List<ParsedItem> itemsList = new ArrayList<>();
         try {
             Document doc = Jsoup.connect(catalogItemsUrl)
                     .ignoreHttpErrors(true)
@@ -72,9 +72,9 @@ public class WiggleParser extends MainParser {
         return itemsList;
     }
 
-    public ParseItem parseItemInfo(String itemUrl) {
+    public ParsedItem parseItemInfo(String itemUrl) {
         itemUrl = ShopHelper.removeParameters(itemUrl);
-        ParseItem parseItem = null;
+        ParsedItem parsedItem = null;
         try {
             Document doc = Jsoup.connect(itemUrl + "?" + CURRENCY + COUNTRY).get();
 
@@ -83,12 +83,11 @@ public class WiggleParser extends MainParser {
 
             List<ItemOptions> itemOptions = parseItemOptions(doc);
 
-            parseItem = new ParseItem(name, wiggleShop, itemUrl, itemOptions, rangePrice);
-            parseItem.setOptions(new ItemOptions(null, null, BigDecimal.ZERO, null));
+            parsedItem = new ParsedItem(name, wiggleShop, itemUrl, itemOptions, rangePrice);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return parseItem;
+        return parsedItem;
     }
 
     protected List<ItemOptions> parseItemOptions(Document doc) {
@@ -100,9 +99,25 @@ public class WiggleParser extends MainParser {
 
         for (Element option : options) {
             String color = option.attr("data-colour");
-            if (!color.equals("null")) {
+            if (color.isEmpty()) {
                 Elements allSizesForColor = option.select("li.bem-sku-selector__option-group-item");
+                for (Element element : allSizesForColor) {
+                    String group = element.select("span.bem-sku-selector__size").text();
+                    String price = element.select("span.bem-sku-selector__price").text()
+                            .replace(wiggleShop.getChosenCurrency(), "")
+                            .replace(",", "");
+                    String status = element.select("span.bem-sku-selector__status-stock").text();
 
+                    // change original status
+                    if (status.equals("Out of stock. Let me know when in stock.")) {
+                        status = "Out of stock";
+                    } else if (status.isEmpty()) {
+                        status = "In stock";
+                    }
+                    res.add(new ItemOptions(group, new BigDecimal(price), status));
+                }
+            } else if (!color.equals("null")) {
+                Elements allSizesForColor = option.select("li.bem-sku-selector__option-group-item");
                 for (Element element : allSizesForColor) {
                     String size = element.select("span.bem-sku-selector__size").text();
                     String price = element.select("span.bem-sku-selector__price").text()
@@ -120,9 +135,10 @@ public class WiggleParser extends MainParser {
                 }
             }
         }
-        res.sort(Comparator.comparing(ItemOptions::getPrice)
-                .thenComparing(ItemOptions::getColor));
-
+        if (res.size() > 1) {
+            res.sort(Comparator.comparing(ItemOptions::getPrice)
+                    .thenComparing(ItemOptions::getColor));
+        }
         return res;
     }
 

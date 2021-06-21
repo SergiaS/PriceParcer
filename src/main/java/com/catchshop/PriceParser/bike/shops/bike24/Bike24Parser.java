@@ -1,7 +1,7 @@
 package com.catchshop.PriceParser.bike.shops.bike24;
 
+import com.catchshop.PriceParser.apibot.telegram.model.ParsedItem;
 import com.catchshop.PriceParser.bike.enums.ParsedShop;
-import com.catchshop.PriceParser.apibot.telegram.model.ParseItem;
 import com.catchshop.PriceParser.bike.model.ItemOptions;
 import com.catchshop.PriceParser.bike.model.Shop;
 import com.catchshop.PriceParser.bike.shops.MainParser;
@@ -31,15 +31,15 @@ public class Bike24Parser extends MainParser {
 
     public static void main(String[] args) {
         Bike24Parser b24 = new Bike24Parser();
-//        ShopHelper.printItems(b24.bike24Searcher("giro syntax"));
+//        ShopHelper.printItems(b24.searcher("specialized propero"));
 
-        ShopHelper.printItem(b24.parseItemInfo("https://www.bike24.com/p2382639.html"));
+        ShopHelper.printItem(b24.parseItemInfo("https://www.bike24.com/p2362125.html"));
     }
 
-    public List<ParseItem> searcher(String textToSearch) {
+    public List<ParsedItem> searcher(String textToSearch) {
         String catalogUrl = SITE + SEARCH + textToSearch + SORT_BY;
 
-        List<ParseItem> itemsList = new ArrayList<>();
+        List<ParsedItem> itemsList = new ArrayList<>();
         ShopHelper.allowAllCertificates(); // very important!
         try {
             Document doc = Jsoup.connect(catalogUrl)
@@ -62,10 +62,10 @@ public class Bike24Parser extends MainParser {
         return itemsList;
     }
 
-    public ParseItem parseItemInfo(String itemUrl) {
+    public ParsedItem parseItemInfo(String itemUrl) {
         ShopHelper.allowAllCertificates(); // very important!
 
-        ParseItem parseItem = null;
+        ParsedItem parsedItem = null;
         try {
             Document doc = Jsoup.connect(itemUrl).get();
 
@@ -81,12 +81,11 @@ public class Bike24Parser extends MainParser {
 
             List<ItemOptions> itemOptionsList = parseItemOptions(doc);
 
-            parseItem = new ParseItem(name, bike24Shop, itemUrl, itemOptionsList, rangePrice);
-            parseItem.setOptions(new ItemOptions(null, BigDecimal.ZERO, null));
+            parsedItem = new ParsedItem(name, bike24Shop, itemUrl, itemOptionsList, rangePrice);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return parseItem;
+        return parsedItem;
     }
 
 
@@ -103,7 +102,7 @@ public class Bike24Parser extends MainParser {
         if (optionsMenu.isEmpty()) {
             String status = doc.select("span.js-current-stock-label,text-av-green").text();
             status = ShopHelper.returnNullIfEmpty(status);
-            res.add(new ItemOptions(null, basePrice, status));
+            res.add(new ItemOptions(basePrice, status));
         } else {
             Elements optionsList = doc.select("table.table-availability")
                     .select("tbody")
@@ -118,7 +117,9 @@ public class Bike24Parser extends MainParser {
                 res.add(new ItemOptions(cleanGroupValue(group), itemPrice, status));
             }
         }
-        res.sort(Comparator.comparing(ItemOptions::getPrice));
+        if (res.size() > 1) {
+            res.sort(Comparator.comparing(ItemOptions::getPrice));
+        }
         return res;
     }
 
@@ -133,7 +134,7 @@ public class Bike24Parser extends MainParser {
                 "n/a");
     }
 
-    // will remove info like " - add 0,84 €" and "head circumference"
+    // will remove info like " - add 0,84 €"
     private static String cleanGroupValue(String group) {
         return group.replace(" head circumference", "")
                 .replace("not deliverable: ", "")

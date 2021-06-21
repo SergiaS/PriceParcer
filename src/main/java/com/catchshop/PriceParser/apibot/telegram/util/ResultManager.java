@@ -2,7 +2,7 @@ package com.catchshop.PriceParser.apibot.telegram.util;
 
 import com.catchshop.PriceParser.apibot.telegram.PriceParserTelegramBot;
 import com.catchshop.PriceParser.apibot.telegram.model.FavoriteItem;
-import com.catchshop.PriceParser.apibot.telegram.model.ParseItem;
+import com.catchshop.PriceParser.apibot.telegram.model.ParsedItem;
 import com.catchshop.PriceParser.apibot.telegram.service.LocaleMessageService;
 import com.catchshop.PriceParser.bike.model.ItemOptions;
 import lombok.extern.slf4j.Slf4j;
@@ -28,32 +28,32 @@ public class ResultManager {
         this.localeMessageService = localeMessageService;
     }
 
-    public void showItemFormattedResults(String chatId, ParseItem parseItem) {
-        log.info("Item results: {}", parseItem);
+    public void showItemFormattedResults(String chatId, ParsedItem parsedItem) {
+        log.info("Item results: {}", parsedItem);
 
         StringBuilder result = new StringBuilder();
-        result.append("<u>").append("<a href=\"").append(parseItem.getUrl()).append("\">").append(parseItem.getTitle())
-                .append("</a> [").append(parseItem.getRangePrice()).append("]</u>").append("\n");
+        result.append("<u>").append("<a href=\"").append(parsedItem.getUrl()).append("\">").append(parsedItem.getTitle())
+                .append("</a> [").append(parsedItem.getRangePrice()).append("]</u>").append("\n");
 
-        addOptions(parseItem, result);
+        addOptions(parsedItem, result);
 
         sendHtmlResultToTelegram(chatId, result.toString());
     }
 
-    public void sendParseItemFormattedResults(String chatId, List<ParseItem> parseItemList) {
-        log.info("ParseItem formatted results for shop {}, Total № of items: {}", parseItemList.get(0).getShop(), parseItemList.size());
+    public void sendParseItemFormattedResults(String chatId, List<ParsedItem> parsedItemList) {
+        log.info("ParseItem formatted results for shop {}, Total № of items: {}", parsedItemList.get(0).getShop(), parsedItemList.size());
 
         int count = 1;
         StringBuilder result = new StringBuilder();
-        for (ParseItem parseItem : parseItemList) {
-            if (parseItem == null) {
-                log.error("There is an error with item={}", parseItem);
+        for (ParsedItem parsedItem : parsedItemList) {
+            if (parsedItem == null) {
+                log.error("There is an error with item={}", parsedItem);
             } else {
-                result.append("<u>").append(count).append(" <a href=\"").append(parseItem.getUrl()).append("\">").append(parseItem.getTitle())
-                        .append("</a> [").append(parseItem.getRangePrice()).append("]</u>").append("\n");
+                result.append("<u>").append(count).append(" <a href=\"").append(parsedItem.getUrl()).append("\">").append(parsedItem.getTitle())
+                        .append("</a> [").append(parsedItem.getRangePrice()).append("]</u>").append("\n");
                 count++;
 
-                addOptions(parseItem, result);
+                addOptions(parsedItem, result);
 
                 sendIfResultIsTooBig(chatId, result);
             }
@@ -72,15 +72,21 @@ public class ResultManager {
 
         int count = 1;
         for (FavoriteItem favoriteItem : favorites) {
-            result.append("\uD83D\uDCCC ").append(count++).append(" :: ").append(favoriteItem.getShop().getName()).append(" <a href=\"").append(favoriteItem.getUrl()).append("\">").append(favoriteItem.getTitle())
-                    .append("</a>").append("\n").append("\uD83E\uDDED ").append(favoriteItem.getShop().getChosenCurrency()).append(favoriteItem.getOptions().getPrice()).append(", ");
+            String group = favoriteItem.getOptions().getGroup();
+            String color = favoriteItem.getOptions().getColor();
+            String size = favoriteItem.getOptions().getSize();
+            String status = favoriteItem.getOptions().getStatus();
+            BigDecimal price = favoriteItem.getOptions().getPrice();
 
-            if (favoriteItem.getOptions().getGroup() != null) {
-                result.append(favoriteItem.getOptions().getGroup());
-            } else {
-                result.append(favoriteItem.getOptions().getColor()).append(", ").append(favoriteItem.getOptions().getSize());
+            result.append("\uD83D\uDCCC ").append(count++).append(" :: ").append(favoriteItem.getShop().getName()).append(" <a href=\"").append(favoriteItem.getUrl()).append("\">").append(favoriteItem.getTitle())
+                    .append("</a>").append("\n").append("\uD83E\uDDED ").append(favoriteItem.getShop().getChosenCurrency()).append(price);
+
+            if (group != null) {
+                result.append(", ").append(group);
+            } else if (color != null && size != null) {
+                result.append(", ").append(color).append(", ").append(size);
             }
-            result.append(", ").append(favoriteItem.getOptions().getStatus()).append("\n").append("\n");
+            result.append(", ").append(status).append("\n").append("\n");
 
             sendIfResultIsTooBig(chatId, result);
         }
@@ -97,18 +103,18 @@ public class ResultManager {
         }
     }
 
-    private void addOptions(ParseItem parseItem, StringBuilder result) {
-        for (ItemOptions options : parseItem.getItemOptionsList()) {
-            result.append("<b>").append(parseItem.getShop().getChosenCurrency()).append(options.getPrice()).append("</b>");
+    private void addOptions(ParsedItem parsedItem, StringBuilder result) {
+        for (ItemOptions options : parsedItem.getParsedOptionsList()) {
+            result.append("<b>").append(parsedItem.getShop().getChosenCurrency()).append(options.getPrice()).append("</b>");
             if (options.getColor() == null) {
                 result
-                        .append(options.getGroup() == null ? "" : ", " + options.getGroup())
-                        .append(options.getStatus() == null ? "" : ", " + options.getStatus());
+                        .append(options.getGroup() == null || options.getGroup().isBlank() ? "" : ", " + options.getGroup())
+                        .append(options.getStatus() == null || options.getStatus().isBlank() ? "" : ", " + options.getStatus());
             } else {
                 result
-                        .append(options.getColor() == null ? "" : ", " + options.getColor())
-                        .append(options.getSize() == null ? "" : ", " + options.getSize())
-                        .append(options.getStatus() == null ? "" : ", " + options.getStatus());
+                        .append(options.getColor() == null || options.getColor().isBlank() ? "" : ", " + options.getColor())
+                        .append(options.getSize() == null || options.getSize().isBlank() ? "" : ", " + options.getSize())
+                        .append(options.getStatus() == null || options.getStatus().isBlank() ? "" : ", " + options.getStatus());
             }
             result.append("\n");
         }
@@ -121,9 +127,9 @@ public class ResultManager {
         telegramBot.sendMessage(resMsg);
     }
 
-    public void notifyIfItemUpdated(String chatId, FavoriteItem oldItem, FavoriteItem newItem) {
+    public boolean notifyIfItemUpdated(String chatId, FavoriteItem oldItem, FavoriteItem newItem) {
+        boolean isUpdated = false;
         StringBuilder result = new StringBuilder();
-
         if (!oldItem.getTitle().equals(newItem.getTitle()) && !oldItem.getShop().equals(newItem.getShop())) {
             result.append(localeMessageService.getMessage("reply.favorites.changedDifferenceError")).append(" ").append(newItem);
         } else if (newItem.getOptions() == null) {
@@ -153,11 +159,14 @@ public class ResultManager {
                                 newItem.getOptions().getGroup() != null ? newItem.getOptions().getGroup() : newItem.getOptions().getSize() + ", " + newItem.getOptions().getColor(),
                                 newItem.getOptions().getStatus()));
                 sendHtmlResultToTelegram(chatId, result.toString());
+                isUpdated = true;
             } else {
-                result.append("❌ ").append(newItem.getTitle());
+                result.append("❌ ").append("NO CHANGES for chatId: ").append(chatId).append(", ").append("SHOP: ").append(newItem.getShop().getName()).append(", ")
+                        .append("ITEM: ").append(newItem.getTitle());
             }
         }
         log.info(result.toString());
+        return isUpdated;
     }
 }
 

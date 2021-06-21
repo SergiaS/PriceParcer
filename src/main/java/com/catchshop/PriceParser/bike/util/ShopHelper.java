@@ -1,6 +1,6 @@
 package com.catchshop.PriceParser.bike.util;
 
-import com.catchshop.PriceParser.apibot.telegram.model.ParseItem;
+import com.catchshop.PriceParser.apibot.telegram.model.ParsedItem;
 import com.catchshop.PriceParser.bike.model.ItemOptions;
 import com.catchshop.PriceParser.bike.shops.MainParser;
 import com.catchshop.PriceParser.bike.shops.bike24.Bike24Parser;
@@ -55,20 +55,20 @@ public class ShopHelper {
         }
     }
 
-    public static void printItem(final ParseItem parseItem) {
-        String title = parseItem.getTitle();
-        String rangePrice = parseItem.getRangePrice();
-        String url = parseItem.getUrl();
-        String currency = parseItem.getShop().getChosenCurrency();
+    public static void printItem(final ParsedItem parsedItem) {
+        String title = parsedItem.getTitle();
+        String rangePrice = parsedItem.getRangePrice();
+        String url = parsedItem.getUrl();
+        String currency = parsedItem.getShop().getChosenCurrency();
 
         System.out.println("No." + (itemCount++) + " - " + title + " [" + rangePrice + "]");
         System.out.println("URL: " + url);
 
-        List<ItemOptions> shopOptionsList = parseItem.getItemOptionsList();
+        List<ItemOptions> shopOptionsList = parsedItem.getParsedOptionsList();
         printShopOptions(shopOptionsList, currency);
     }
 
-    public static void printItems(List<ParseItem> itemsList) {
+    public static void printItems(List<ParsedItem> itemsList) {
         for (int i = 0; i < itemsList.size(); i++) {
             String title = itemsList.get(i).getTitle();
             String priceRange = itemsList.get(i).getRangePrice();
@@ -78,7 +78,7 @@ public class ShopHelper {
             System.out.println("No." + (i + 1) + " - " + title + " [" + priceRange + "]");
             System.out.println("URL: " + url);
 
-            List<ItemOptions> optionsList = itemsList.get(i).getItemOptionsList();
+            List<ItemOptions> optionsList = itemsList.get(i).getParsedOptionsList();
             printShopOptions(optionsList, currency);
         }
     }
@@ -91,17 +91,17 @@ public class ShopHelper {
                 String status = options.getStatus();
 
                 System.out.println(currency + price +
-                        (group == null ? "" : ", " + group) +
-                        (status == null ? "" : ", " + status));
+                        (group == null || group.isBlank() ? "" : ", " + group) +
+                        (status == null || status.isBlank() ? "" : ", " + status));
             } else {
                 String size = options.getSize();
                 String color = options.getColor();
                 BigDecimal price = options.getPrice();
                 String status = options.getStatus();
                 System.out.println(currency + price +
-                        (color == null ? "" : ", " + color) +
-                        (size == null ? "" : ", " + size) +
-                        (status == null ? "" : ", [" + status + "]"));
+                        (color == null || color.isBlank() ? "" : ", " + color) +
+                        (size == null || size.isBlank() ? "" : ", " + size) +
+                        (status == null || status.isBlank() ? "" : ", [" + status + "]"));
             }
         }
         System.out.println();

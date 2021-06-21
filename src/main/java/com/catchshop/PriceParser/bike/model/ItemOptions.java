@@ -1,14 +1,25 @@
 package com.catchshop.PriceParser.bike.model;
 
+import org.springframework.data.annotation.PersistenceConstructor;
+
 import java.math.BigDecimal;
 import java.util.Objects;
 
 public class ItemOptions {
-    private String group; // comboField
+    private String group; // comboField/mixed
     private String color;
     private String size;
     private BigDecimal price;
     private String status;
+
+    @PersistenceConstructor
+    public ItemOptions() {
+    }
+
+    public ItemOptions(BigDecimal price, String status) {
+        this.price = price;
+        this.status = status;
+    }
 
     public ItemOptions(String group, BigDecimal price, String status) {
         this.group = group;
@@ -17,6 +28,14 @@ public class ItemOptions {
     }
 
     public ItemOptions(String color, String size, BigDecimal price, String status) {
+        this.color = color;
+        this.size = size;
+        this.price = price;
+        this.status = status;
+    }
+
+    public ItemOptions(String group, String color, String size, BigDecimal price, String status) {
+        this.group = group;
         this.color = color;
         this.size = size;
         this.price = price;

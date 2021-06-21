@@ -1,19 +1,21 @@
 package com.catchshop.PriceParser.apibot.telegram.model;
 
-import com.catchshop.PriceParser.bike.model.ItemOptions;
 import com.catchshop.PriceParser.bike.model.Shop;
+import org.springframework.data.annotation.PersistenceConstructor;
 
-public abstract class Item {
-    private final String title;
-    private final Shop shop;
-    private final String url;
-    private ItemOptions options;
+public class Item {
+    private String title;
+    private Shop shop;
+    private String url;
 
-    public Item(String title, Shop shop, String url, ItemOptions options) {
+    @PersistenceConstructor
+    public Item() {
+    }
+
+    public Item(String title, Shop shop, String url) {
         this.title = title;
         this.shop = shop;
         this.url = url;
-        this.options = options;
     }
 
     public String getTitle() {
@@ -28,21 +30,12 @@ public abstract class Item {
         return url;
     }
 
-    public ItemOptions getOptions() {
-        return options;
-    }
-
-    public void setOptions(ItemOptions options) {
-        this.options = options;
-    }
-
     @Override
     public String toString() {
         return "Item{" +
                 "title='" + title + '\'' +
                 ", shop=" + shop +
                 ", url='" + url + '\'' +
-                ", options=" + options +
                 '}';
     }
 }

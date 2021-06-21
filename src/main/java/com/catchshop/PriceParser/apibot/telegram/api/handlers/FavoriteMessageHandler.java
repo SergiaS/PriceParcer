@@ -4,10 +4,10 @@ import com.catchshop.PriceParser.apibot.telegram.api.BotStatus;
 import com.catchshop.PriceParser.apibot.telegram.api.InputMessageHandler;
 import com.catchshop.PriceParser.apibot.telegram.model.FavoriteItem;
 import com.catchshop.PriceParser.apibot.telegram.model.UserProfile;
-import com.catchshop.PriceParser.apibot.telegram.repository.UserRepository;
 import com.catchshop.PriceParser.apibot.telegram.service.LocaleMessageService;
 import com.catchshop.PriceParser.apibot.telegram.service.MenuKeyboardService;
 import com.catchshop.PriceParser.apibot.telegram.service.ReplyMessageService;
+import com.catchshop.PriceParser.apibot.telegram.service.UserProfileService;
 import com.catchshop.PriceParser.apibot.telegram.util.ResultManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -19,15 +19,15 @@ import java.util.List;
 @Component
 public class FavoriteMessageHandler implements InputMessageHandler {
     private final MenuKeyboardService menuKeyboardService;
-    private final UserRepository userRepository;
+    private final UserProfileService userProfileService;
     private final LocaleMessageService localeMessageService;
     private final ReplyMessageService replyMessageService;
     private final ResultManager resultManager;
 
     @Autowired
-    public FavoriteMessageHandler(MenuKeyboardService menuKeyboardService, UserRepository userRepository, LocaleMessageService localeMessageService, ReplyMessageService replyMessageService, ResultManager resultManager) {
+    public FavoriteMessageHandler(MenuKeyboardService menuKeyboardService, UserProfileService userProfileService, LocaleMessageService localeMessageService, ReplyMessageService replyMessageService, ResultManager resultManager) {
         this.menuKeyboardService = menuKeyboardService;
-        this.userRepository = userRepository;
+        this.userProfileService = userProfileService;
         this.localeMessageService = localeMessageService;
         this.replyMessageService = replyMessageService;
         this.resultManager = resultManager;
@@ -35,17 +35,16 @@ public class FavoriteMessageHandler implements InputMessageHandler {
 
     @Override
     public SendMessage handle(Message inputMessage) {
-        Long userId = inputMessage.getFrom().getId();
         Long chatId = inputMessage.getChatId();
         String text = inputMessage.getText();
 
         SendMessage replyToUser = null;
-        UserProfile userProfile = userRepository.getUserProfile(userId);
-        BotStatus botStatus = userRepository.getBotStatus(userId);
+        UserProfile userProfile = userProfileService.getUserProfileData(chatId);
+        BotStatus botStatus = userProfile.getBotStatus();
 
-        List<FavoriteItem> allItems = userRepository.getAllItems(userId);
+        List<FavoriteItem> allItems = userProfile.getFavorites();
         if (botStatus.equals(BotStatus.SHOW_FAVORITES)) {
-            replyToUser = allItemsAnswer(chatId, userId, allItems);
+            replyToUser = getAllItems(chatId, allItems);
         } else if (botStatus.equals(BotStatus.SHOW_FAVORITES_DELETE)) {
             if (text.equals(localeMessageService.getMessage("button.menu.deleteFavoriteByNumber"))) {
                 replyToUser = replyMessageService.getReplyMessage(chatId.toString(), "reply.favorites.deleteFavoriteByNumber");
@@ -55,14 +54,21 @@ public class FavoriteMessageHandler implements InputMessageHandler {
                 // checks if entered number is exist in the list
                 int index = Integer.parseInt(text) - 1;
                 if (allItems.get(index) != null) {
-                    String deletedTitleItem = allItems.get(index).getTitle();
-                    resultManager.sendHtmlResultToTelegram(chatId.toString(), String.format(localeMessageService.getMessage("reply.favorites.removed"), deletedTitleItem));
+                    String title = allItems.get(index).getTitle();
+                    String group = allItems.get(index).getOptions().getGroup();
+                    String color = allItems.get(index).getOptions().getColor();
+                    String size = allItems.get(index).getOptions().getSize();
+                    StringBuilder deletingItem = new StringBuilder(title)
+                            .append(group == null ? "" : ", " + group)
+                            .append(color == null ? "" : ", " + color)
+                            .append(size == null ? "" : ", " + size);
+                    resultManager.sendHtmlResultToTelegram(chatId.toString(), String.format(localeMessageService.getMessage("reply.favorites.removed"), deletingItem));
 
                     allItems.remove(index);
                     userProfile.setFavorites(allItems);
-                    userRepository.saveUserProfile(userId, userProfile);
+                    userProfileService.saveUserProfile(userProfile);
 
-                    replyToUser = allItemsAnswer(chatId, userId, allItems);
+                    replyToUser = getAllItems(chatId, allItems);
                 } else {
                     replyToUser = replyMessageService.getReplyMessage(chatId.toString(), "reply.favorites.removeError");
                 }
@@ -77,17 +83,17 @@ public class FavoriteMessageHandler implements InputMessageHandler {
         return text.matches("\\d+") && Integer.parseInt(text) <= allItems.size();
     }
 
-    private SendMessage allItemsAnswer(Long chatId, Long userId, List<FavoriteItem> allItems) {
+    private SendMessage getAllItems(Long chatId, List<FavoriteItem> allItems) {
         SendMessage replyToUser;
-        UserProfile userProfile = userRepository.getUserProfile(userId);
+        UserProfile userProfile = userProfileService.getUserProfileData(chatId);
         if (allItems.size() == 0) {
             userProfile.setBotStatus(BotStatus.SHOW_MENU);
-            userRepository.saveUserProfile(userId, userProfile);
+            userProfileService.saveUserProfile(userProfile);
             replyToUser = replyMessageService.getReplyMessage(chatId.toString(), "reply.favorites.isEmpty");
         } else {
             if (userProfile.getBotStatus() == BotStatus.SHOW_FAVORITES_DELETE) {
                 userProfile.setBotStatus(BotStatus.SHOW_FAVORITES);
-                userRepository.saveUserProfile(userId, userProfile);
+                userProfileService.saveUserProfile(userProfile);
             }
             replyToUser = resultManager.getFavoriteItemFormattedResult(chatId.toString(), allItems);
         }

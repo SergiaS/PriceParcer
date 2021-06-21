@@ -1,35 +1,42 @@
 package com.catchshop.PriceParser.apibot.telegram.model;
 
 import com.catchshop.PriceParser.apibot.telegram.api.BotStatus;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.PersistenceConstructor;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Slf4j
+@Document(collection = "userProfile")
 public class UserProfile {
 
-    private ParseItem tmpParsedParseItem;
+    @Id
+    private String id;
+
+    @Indexed(unique = true)
+    private long chatId;
     private List<FavoriteItem> favorites;
     private BotStatus botStatus;
     private String languageTag;
     // and more shop settings ...
 
-    @Autowired
-    public UserProfile() {
+    @PersistenceConstructor
+    public UserProfile(Long chatId) {
+        this.chatId = chatId;
         this.botStatus = BotStatus.SHOW_MENU;
         this.languageTag = "en-EN";
         this.favorites = new ArrayList<>();
-        favorites.addAll(FavoriteItem.fillDefaultFavorites());
+//        System.out.println(" = = = UserProfile = = =");
     }
 
-    public ParseItem getTmpParsedItem() {
-        return tmpParsedParseItem;
+    public long getChatId() {
+        return chatId;
     }
 
-    public void setTmpParsedItem(ParseItem tmpParsedParseItem) {
-        this.tmpParsedParseItem = tmpParsedParseItem;
+    public void setChatId(long chatId) {
+        this.chatId = chatId;
     }
 
     public List<FavoriteItem> getFavorites() {

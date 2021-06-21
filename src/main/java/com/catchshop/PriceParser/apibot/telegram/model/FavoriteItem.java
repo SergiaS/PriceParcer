@@ -5,25 +5,25 @@ import com.catchshop.PriceParser.bike.model.ItemOptions;
 import com.catchshop.PriceParser.bike.model.Shop;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 public class FavoriteItem extends Item {
 
-    private LocalDateTime dateTimeUpdate;
+    private ItemOptions options;
 
-    public FavoriteItem(String TITLE, Shop SHOP, String URL, ItemOptions OPTIONS) {
-        super(TITLE, SHOP, URL, OPTIONS);
-        this.dateTimeUpdate = LocalDateTime.now().withNano(0);
+    public FavoriteItem(String title, Shop shop, String url, ItemOptions options) {
+        super(title, shop, url);
+        this.options = options;
+//        System.out.println(" @ FavoriteItem @");
     }
 
-    public LocalDateTime getDateTimeUpdate() {
-        return dateTimeUpdate;
+    public ItemOptions getOptions() {
+        return options;
     }
 
-    public void setDateTimeUpdate(LocalDateTime dateTimeUpdate) {
-        this.dateTimeUpdate = dateTimeUpdate;
+    public void setOptions(ItemOptions options) {
+        this.options = options;
     }
 
     public static List<FavoriteItem> fillDefaultFavorites() {
@@ -31,7 +31,7 @@ public class FavoriteItem extends Item {
         FavoriteItem favoriteItem1 = new FavoriteItem("Endura FS260 Pro Bib Shorts",
                 Shop.getExampleShop(ParsedShop.WIGGLE),
                 "https://www.wiggle.co.uk/endura-fs260-pro-bib-shorts-1",
-                new ItemOptions("Red", "Medium", new BigDecimal("105.82"),"In stock"));
+                new ItemOptions("Black", "Large", new BigDecimal("105.82"),"In stock"));
         FavoriteItem favoriteItem2 = new FavoriteItem("Under Armour HeatGear Armour Short Sleeve Compression Tee",
                 Shop.getExampleShop(ParsedShop.WIGGLE),
                 "https://www.wiggle.co.uk/under-armour-heatgear-armour-short-sleeve-compression-tee-1",
@@ -48,31 +48,29 @@ public class FavoriteItem extends Item {
     }
 
     /** Simple converter from ParseItem to FavoriteItem
+     * when needs to save parsedItem into favorites - use it
      */
-    public static FavoriteItem convertToFavoriteItem(ParseItem item) {
-        String title = item.getTitle();
-        String url = item.getUrl();
-        Shop shop = item.getShop();
+    public static FavoriteItem convertToFavoriteItem(ParsedItem parsedItem) {
+        String title = parsedItem.getTitle();
+        String url = parsedItem.getUrl();
+        Shop shop = parsedItem.getShop();
 
-        String group = item.getOptions().getGroup();
-        String size = item.getOptions().getSize();
-        String color = item.getOptions().getColor();
-        String status = item.getOptions().getStatus();
-        BigDecimal price = item.getOptions().getPrice();
+        String group = parsedItem.getSelectedOptions().getGroup();
+        String color = parsedItem.getSelectedOptions().getColor();
+        String size = parsedItem.getSelectedOptions().getSize();
+        String status = parsedItem.getSelectedOptions().getStatus();
+        BigDecimal price = parsedItem.getSelectedOptions().getPrice();
 
-        if (group == null) {
-            return new FavoriteItem(title, shop, url, new ItemOptions(color, size, price, status));
-        }
-        return new FavoriteItem(title, shop, url, new ItemOptions(group, price, status));
+        return new FavoriteItem(title, shop, url, new ItemOptions(group, color, size, price, status));
     }
 
-    /** Converter that needs FavoriteItem target with specific values
+    /** Converts ParsedItem (SchedulerExecutionService - update object) to FavoriteItem for additional comparing
      */
-    public static FavoriteItem convertToFavoriteItem(ParseItem item, FavoriteItem target) {
+    public static FavoriteItem convertToFavoriteItem(ParsedItem item, FavoriteItem target) {
         String group, color, size, status;
         BigDecimal price;
         ItemOptions options = null;
-        for (ItemOptions itemOptions : item.getItemOptionsList()) {
+        for (ItemOptions itemOptions : item.getParsedOptionsList()) {
             if (itemOptions.getColor() != null && itemOptions.getColor().equals(target.getOptions().getColor()) &&
                     itemOptions.getSize() != null && itemOptions.getSize().equals(target.getOptions().getSize())) {
                 color = itemOptions.getColor();
@@ -96,8 +94,6 @@ public class FavoriteItem extends Item {
                 "title='" + getTitle() +
                 ", shop=" + getShop() +
                 ", url='" + getUrl() +
-                ", options=" + getOptions() +
-                ", dateTimeUpdate=" + dateTimeUpdate +
                 '}';
     }
 }
