@@ -2,6 +2,7 @@ package com.catchshop.PriceParser.apibot.telegram.model;
 
 import com.catchshop.PriceParser.apibot.telegram.api.BotStatus;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.PersistenceConstructor;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -21,13 +22,13 @@ public class UserProfile {
     private String languageTag;
     // and more shop settings ...
 
+    @PersistenceConstructor
     public UserProfile(Long chatId) {
         this.chatId = chatId;
         this.botStatus = BotStatus.SHOW_MENU;
         this.languageTag = "en-EN";
         this.favorites = new ArrayList<>();
 //        System.out.println(" = = = UserProfile = = =");
-//        favorites.addAll(FavoriteItem.fillDefaultFavorites());
     }
 
     public long getChatId() {

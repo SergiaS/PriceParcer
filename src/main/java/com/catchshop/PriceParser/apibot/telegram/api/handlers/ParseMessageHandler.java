@@ -122,9 +122,15 @@ public class ParseMessageHandler implements InputMessageHandler {
             if (userMsg.equals(localeMessageService.getMessage("reply.answer.yes"))) {
                 ParsedItem parsedItem = cachedParsedResult.getParsedItem(chatId);
 
-                userProfile.getFavorites().add(FavoriteItem.convertToFavoriteItem(parsedItem));
+                List<FavoriteItem> favorites = userProfile.getFavorites();
+                favorites.add(FavoriteItem.convertToFavoriteItem(parsedItem));
                 userProfile.setBotStatus(BotStatus.SHOW_MENU);
                 userProfileService.saveUserProfile(userProfile);
+
+                // starts to track item
+                if (favorites.size() == 1) {
+                    userProfileService.startTrackingUserFavorites(chatId);
+                }
 
                 String result = String.format(localeMessageService.getMessage("reply.parse.end"), getItemNameWithOptions(parsedItem));
                 replyToUser.setReplyMarkup(menuKeyboardService.getMenuKeyboard(chatId));

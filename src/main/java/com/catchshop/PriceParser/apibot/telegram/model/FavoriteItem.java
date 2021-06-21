@@ -31,7 +31,7 @@ public class FavoriteItem extends Item {
         FavoriteItem favoriteItem1 = new FavoriteItem("Endura FS260 Pro Bib Shorts",
                 Shop.getExampleShop(ParsedShop.WIGGLE),
                 "https://www.wiggle.co.uk/endura-fs260-pro-bib-shorts-1",
-                new ItemOptions("Red", "Medium", new BigDecimal("105.82"),"In stock"));
+                new ItemOptions("Black", "Large", new BigDecimal("105.82"),"In stock"));
         FavoriteItem favoriteItem2 = new FavoriteItem("Under Armour HeatGear Armour Short Sleeve Compression Tee",
                 Shop.getExampleShop(ParsedShop.WIGGLE),
                 "https://www.wiggle.co.uk/under-armour-heatgear-armour-short-sleeve-compression-tee-1",
@@ -64,29 +64,29 @@ public class FavoriteItem extends Item {
         return new FavoriteItem(title, shop, url, new ItemOptions(group, color, size, price, status));
     }
 
-//    /** Converter that needs FavoriteItem target with specific values
-//     */
-//    public static FavoriteItem convertToFavoriteItem(ParseItem item, FavoriteItem target) {
-//        String group, color, size, status;
-//        BigDecimal price;
-//        ItemOptions options = null;
-//        for (ItemOptions itemOptions : item.getItemOptionsList()) {
-//            if (itemOptions.getColor() != null && itemOptions.getColor().equals(target.getOptions().getColor()) &&
-//                    itemOptions.getSize() != null && itemOptions.getSize().equals(target.getOptions().getSize())) {
-//                color = itemOptions.getColor();
-//                size = itemOptions.getSize();
-//                price = itemOptions.getPrice();
-//                status = itemOptions.getStatus();
-//                options = new ItemOptions(color, size, price, status);
-//            } else if (itemOptions.getGroup() != null && itemOptions.getGroup().equals(target.getOptions().getGroup())) {
-//                group = itemOptions.getGroup();
-//                price = itemOptions.getPrice();
-//                status = itemOptions.getStatus();
-//                options = new ItemOptions(group, price, status);
-//            }
-//        }
-//        return new FavoriteItem(target.getTitle(), target.getShop(), target.getUrl(), options);
-//    }
+    /** Converts ParsedItem (SchedulerExecutionService - update object) to FavoriteItem for additional comparing
+     */
+    public static FavoriteItem convertToFavoriteItem(ParsedItem item, FavoriteItem target) {
+        String group, color, size, status;
+        BigDecimal price;
+        ItemOptions options = null;
+        for (ItemOptions itemOptions : item.getParsedOptionsList()) {
+            if (itemOptions.getColor() != null && itemOptions.getColor().equals(target.getOptions().getColor()) &&
+                    itemOptions.getSize() != null && itemOptions.getSize().equals(target.getOptions().getSize())) {
+                color = itemOptions.getColor();
+                size = itemOptions.getSize();
+                price = itemOptions.getPrice();
+                status = itemOptions.getStatus();
+                options = new ItemOptions(color, size, price, status);
+            } else if (itemOptions.getGroup() != null && itemOptions.getGroup().equals(target.getOptions().getGroup())) {
+                group = itemOptions.getGroup();
+                price = itemOptions.getPrice();
+                status = itemOptions.getStatus();
+                options = new ItemOptions(group, price, status);
+            }
+        }
+        return new FavoriteItem(target.getTitle(), target.getShop(), target.getUrl(), options);
+    }
 
     @Override
     public String toString() {

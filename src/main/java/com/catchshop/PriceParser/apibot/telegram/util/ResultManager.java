@@ -127,9 +127,9 @@ public class ResultManager {
         telegramBot.sendMessage(resMsg);
     }
 
-    public void notifyIfItemUpdated(String chatId, FavoriteItem oldItem, FavoriteItem newItem) {
+    public boolean notifyIfItemUpdated(String chatId, FavoriteItem oldItem, FavoriteItem newItem) {
+        boolean isUpdated = false;
         StringBuilder result = new StringBuilder();
-
         if (!oldItem.getTitle().equals(newItem.getTitle()) && !oldItem.getShop().equals(newItem.getShop())) {
             result.append(localeMessageService.getMessage("reply.favorites.changedDifferenceError")).append(" ").append(newItem);
         } else if (newItem.getOptions() == null) {
@@ -159,11 +159,14 @@ public class ResultManager {
                                 newItem.getOptions().getGroup() != null ? newItem.getOptions().getGroup() : newItem.getOptions().getSize() + ", " + newItem.getOptions().getColor(),
                                 newItem.getOptions().getStatus()));
                 sendHtmlResultToTelegram(chatId, result.toString());
+                isUpdated = true;
             } else {
-                result.append("❌ ").append(newItem.getTitle());
+                result.append("❌ ").append("NO CHANGES for chatId: ").append(chatId).append(", ").append("SHOP: ").append(newItem.getShop().getName()).append(", ")
+                        .append("ITEM: ").append(newItem.getTitle());
             }
         }
         log.info(result.toString());
+        return isUpdated;
     }
 }
 
