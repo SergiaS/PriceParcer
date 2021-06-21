@@ -7,6 +7,7 @@ import com.catchshop.PriceParser.bike.model.Shop;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class FavoriteItem extends Item {
 
@@ -86,6 +87,19 @@ public class FavoriteItem extends Item {
             }
         }
         return new FavoriteItem(target.getTitle(), target.getShop(), target.getUrl(), options);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        FavoriteItem that = (FavoriteItem) o;
+        return Objects.equals(options, that.options);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(options);
     }
 
     @Override

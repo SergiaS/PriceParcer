@@ -46,41 +46,9 @@ public class FavoriteMessageHandler implements InputMessageHandler {
         if (botStatus.equals(BotStatus.SHOW_FAVORITES)) {
             replyToUser = getAllItems(chatId, allItems);
         } else if (botStatus.equals(BotStatus.SHOW_FAVORITES_DELETE)) {
-            if (text.equals(localeMessageService.getMessage("button.menu.deleteFavoriteByNumber"))) {
-                replyToUser = replyMessageService.getReplyMessage(chatId.toString(), "reply.favorites.deleteFavoriteByNumber");
-            }
-            // checks if entered msg contains only digits
-            else if (isNumberInListRange(text, allItems)) {
-                // checks if entered number is exist in the list
-                int index = Integer.parseInt(text) - 1;
-                if (allItems.get(index) != null) {
-                    String title = allItems.get(index).getTitle();
-                    String group = allItems.get(index).getOptions().getGroup();
-                    String color = allItems.get(index).getOptions().getColor();
-                    String size = allItems.get(index).getOptions().getSize();
-                    StringBuilder deletingItem = new StringBuilder(title)
-                            .append(group == null ? "" : ", " + group)
-                            .append(color == null ? "" : ", " + color)
-                            .append(size == null ? "" : ", " + size);
-                    resultManager.sendHtmlResultToTelegram(chatId.toString(), String.format(localeMessageService.getMessage("reply.favorites.removed"), deletingItem));
-
-                    allItems.remove(index);
-                    userProfile.setFavorites(allItems);
-                    userProfileService.saveUserProfile(userProfile);
-
-                    replyToUser = getAllItems(chatId, allItems);
-                } else {
-                    replyToUser = replyMessageService.getReplyMessage(chatId.toString(), "reply.favorites.removeError");
-                }
-            } else {
-                replyToUser = replyMessageService.getReplyMessage(chatId.toString(), "reply.favorites.removeError");
-            }
+            replyToUser = favoriteDelete(chatId, text);
         }
         return replyToUser;
-    }
-
-    private boolean isNumberInListRange(String text, List<FavoriteItem> allItems) {
-        return text.matches("\\d+") && Integer.parseInt(text) <= allItems.size();
     }
 
     private SendMessage getAllItems(Long chatId, List<FavoriteItem> allItems) {
@@ -99,6 +67,47 @@ public class FavoriteMessageHandler implements InputMessageHandler {
         }
         replyToUser.setReplyMarkup(menuKeyboardService.getMenuKeyboard(chatId));
         return replyToUser;
+    }
+
+    private SendMessage favoriteDelete(Long chatId, String userText) {
+        UserProfile userProfile = userProfileService.getUserProfileData(chatId);
+        SendMessage replyToUser;
+
+        List<FavoriteItem> allItems = userProfile.getFavorites();
+        if (userText.equals(localeMessageService.getMessage("button.menu.deleteFavoriteByNumber"))) {
+            replyToUser = replyMessageService.getReplyMessage(chatId.toString(), "reply.favorites.deleteFavoriteByNumber");
+        }
+        // checks if entered msg contains only digits
+        else if (isNumberInListRange(userText, allItems)) {
+            // checks if entered number is exist in the list
+            int index = Integer.parseInt(userText) - 1;
+            if (allItems.get(index) != null) {
+                String title = allItems.get(index).getTitle();
+                String group = allItems.get(index).getOptions().getGroup();
+                String color = allItems.get(index).getOptions().getColor();
+                String size = allItems.get(index).getOptions().getSize();
+                StringBuilder deletingItem = new StringBuilder(title)
+                        .append(group == null ? "" : ", " + group)
+                        .append(color == null ? "" : ", " + color)
+                        .append(size == null ? "" : ", " + size);
+                resultManager.sendHtmlResultToTelegram(chatId.toString(), String.format(localeMessageService.getMessage("reply.favorites.removed"), deletingItem));
+
+                allItems.remove(index);
+                userProfile.setFavorites(allItems);
+                userProfileService.saveUserProfile(userProfile);
+
+                replyToUser = getAllItems(chatId, allItems);
+            } else {
+                replyToUser = replyMessageService.getReplyMessage(chatId.toString(), "reply.favorites.removeError");
+            }
+        } else {
+            replyToUser = replyMessageService.getReplyMessage(chatId.toString(), "reply.favorites.removeError");
+        }
+        return replyToUser;
+    }
+
+    private boolean isNumberInListRange(String text, List<FavoriteItem> allItems) {
+        return text.matches("\\d+") && Integer.parseInt(text) <= allItems.size();
     }
 
     @Override
